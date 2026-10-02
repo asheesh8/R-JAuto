@@ -10,7 +10,7 @@ import Icon from '@/components/Icon.astro';
 import { company, DAY_LABELS, DAY_ORDER, DEFAULT_SERVICES } from '@/data/business';
 import { isSignedIn } from '@/lib/auth';
 import { getContent, MONTHS } from '@/lib/content';
-import { storeStatus, usingDemoPassword } from '@/lib/store';
+import { storeStatus } from '@/lib/store';
 
 export const prerender = false;
 
@@ -18,7 +18,6 @@ const signedIn = await isSignedIn(Astro.cookies);
 const error = Astro.url.searchParams.get('error');
 const content = signedIn ? await getContent() : null;
 const store = await storeStatus();
-const demo = usingDemoPassword();
 Astro.response.headers.set('Cache-Control', 'no-store');
 
 const statusOptions = [
@@ -71,9 +70,6 @@ const updated = content?.updatedAt
         </header>
 
         <main class="panel">
-          {demo && (
-            <p class="warn"><Icon name="warning" size={18} /> <span>This panel is still using the demo password. Set <code>ADMIN_PASSWORD</code> on the Vercel project before launch.</span></p>
-          )}
           {!store.writable && (
             <p class="warn"><Icon name="warning" size={18} /> <span>No storage is connected, so saving will fail. Add a Vercel Blob store to the project (see ADMIN.md).</span></p>
           )}
@@ -186,7 +182,7 @@ const updated = content?.updatedAt
               <p>A one-line message across the top of every page, like "Closed Friday for the holiday". It replaces the promotion bar while it is on.</p>
             </div>
             <div class="fields fields--flat">
-              <label class="switch"><input type="checkbox" name="active" checked={content!.announcement.active} /> <span>Show the announcement</span></label>
+              <label class="switch"><input type="checkbox" name="active" checked={content!.announcement.active} /> <span>Show the notice bar</span></label>
               <div class="f f--wide"><label>Message</label><input name="text" value={content!.announcement.text} maxlength="160" /></div>
               <fieldset class="f">
                 <legend>Style</legend>
@@ -489,7 +485,10 @@ const updated = content?.updatedAt
       .tabs { display: flex; gap: 2px; margin-inline: auto; overflow-x: auto; }
       .tabs a { padding: 8px 12px 6px; border-radius: var(--radius); font-size: var(--t-sm); font-weight: 650; color: var(--ink-2); text-decoration: none; white-space: nowrap; }
       .tabs a.is-on { background: var(--green-tint); color: var(--green); }
-      .bar__out { display: inline-flex; gap: 6px; align-items: center; border: 0; background: none; font-size: var(--t-sm); font-weight: 650; color: var(--ink-2); cursor: pointer; white-space: nowrap; }
+      .bar form { display: flex; }
+      .bar__out { display: inline-flex; gap: 6px; align-items: center; padding: 8px 10px 6px; border: 0; border-radius: var(--radius); background: none; font-size: var(--t-sm); font-weight: 650; color: var(--ink-2); cursor: pointer; white-space: nowrap; }
+      .bar__out:hover, .tabs a:hover { color: var(--ink); background: var(--paper-2); }
+      .tabs a.is-on:hover { background: var(--green-tint); color: var(--green); }
 
       .panel { max-width: 920px; margin: 0 auto; padding: 24px 20px 120px; display: grid; gap: 20px; }
       .warn { display: flex; gap: 10px; align-items: flex-start; padding: 14px 16px 12px; border-radius: var(--radius); background: #fff6d6; color: #5a4300; font-size: var(--t-sm); }
@@ -547,8 +546,9 @@ const updated = content?.updatedAt
 
       @media (max-width: 640px) {
         .fields { grid-template-columns: 1fr; }
-        .hours__row { grid-template-columns: 1fr auto; }
-        .hours__row input[type='time'] { grid-column: span 1; }
+        /* Day and Closed on one line, opens and closes as two equal boxes below. */
+        .hours__row { grid-template-columns: 1fr 1fr; }
+        .hours__row .switch--sm { justify-self: end; }
         .hours__to { display: none; }
         .bar__brand { display: none; }
         .bar__in { gap: 8px; padding: 0 12px; }

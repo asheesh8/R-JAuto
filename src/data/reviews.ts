@@ -39,7 +39,7 @@ export const featured = { name: 'samson staff', quote: 'John helped us when our 
 export const tickets = [
   {
     no: '0417',
-    when: 'Fri · 5:00 PM',
+    when: 'Friday, 5:00 PM',
     title: 'Broke down at closing time',
     what: 'Towed in as the other shops shut. Looked at right away. It could not be saved, so the car stayed in the garage overnight and John made the calls to get them a cab to their inn.',
     stamp: 'No charge',
@@ -48,7 +48,7 @@ export const tickets = [
   },
   {
     no: '0388',
-    when: 'Sat · Morning',
+    when: 'Saturday morning',
     title: 'Van overheated in a state forest',
     what: 'Limped in on a Saturday without an appointment. Cooling system flushed and back on the road.',
     stamp: 'No appointment',

@@ -23,8 +23,8 @@ holds every default and every factual claim.
    framework to Astro.
 2. **Add a Blob store**: Project, Storage, Create, Blob. Vercel injects
    `BLOB_READ_WRITE_TOKEN`.
-3. **Set the admin password**: add `ADMIN_PASSWORD` (a long passphrase) and,
-   optionally, `ADMIN_SESSION_SECRET` (any long random string).
+3. Optional: add `ADMIN_SESSION_SECRET` (any long random string) to sign
+   admin sessions. Without it the Blob token from step 2 does the job.
 4. Redeploy.
 
 Until step 2 the public site renders on its built-in defaults and `/admin`
@@ -32,12 +32,23 @@ says storage is missing. Nothing breaks.
 
 ## The admin password
 
-Without `ADMIN_PASSWORD` the panel accepts the demo password
-**`NORTHMAIN460`**. This repository is public, so that password is public
-knowledge, and it also signs the session cookie. Fine for showing John the
-panel; not fine once the site is live. Setting `ADMIN_PASSWORD` replaces it
-completely and signs everyone out. The panel shows a yellow warning while the
-demo password is active.
+John has the password. The repository is public, so it is stored only as a
+salted PBKDF2 hash (`ADMIN_PASSWORD_HASH` in `src/lib/store/index.ts`), never
+as plain text. To change it:
+
+```bash
+npm run hash-password -- 'new password'
+```
+
+Paste the printed line over `ADMIN_PASSWORD_HASH`, commit and push. Changing
+it does not sign anyone out; their session simply runs out within 12 hours.
+
+Setting `ADMIN_PASSWORD` on the Vercel project overrides the built-in
+password entirely, if you would rather keep it out of the code.
+
+Sessions are signed with `ADMIN_SESSION_SECRET`, else `ADMIN_PASSWORD`, else
+the Blob token. With none of them (local dev without a token) the key is made
+up when the server starts, so restarting `npm run dev` signs you out.
 
 ## How storage works
 
@@ -56,5 +67,5 @@ Saves are last-write-wins; with one or two people editing that is fine.
 ## Worth knowing
 
 - `/admin` is `noindex` but not hidden; anyone who finds it sees the password prompt.
-- There is no rate limit on sign-in, only a 400 ms delay on a wrong password. Make the real password long.
+- There is no rate limit on sign-in, only a 400 ms delay on a wrong password and a deliberately slow hash.
 - Services John adds himself use the shop-at-dusk photo. To give one its own photo, add `src/assets/photos/services/<id>.jpg` (the id is the service name, lowercased with dashes).

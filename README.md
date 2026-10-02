@@ -25,6 +25,6 @@ npm run build
 - Walk the service list with John and hide anything R&J does not do.
 - Confirm John is the owner, the undercoating months, and the domain.
 - Swap the AI-generated mood photos for real shop photos when we have them.
-- Set `ADMIN_PASSWORD` and add a Blob store on Vercel.
+- Add a Blob store on Vercel so admin edits can save (see ADMIN.md).
 
 Asset sources and licences: [raw-assets/SOURCES.md](raw-assets/SOURCES.md).

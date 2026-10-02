@@ -5,26 +5,18 @@ import type { Driver, StoreData } from './types';
 export type { StoreData } from './types';
 
 /**
- * Used only while no ADMIN_PASSWORD is configured, so the panel works the
- * moment the site deploys. It is in the repository and therefore public
- * knowledge: set ADMIN_PASSWORD on the Vercel project before launch. Doing so
- * also re-keys the session cookie, since ADMIN_SESSION_SECRET falls back to it.
+ * The admin password John was given, stored only as a salted PBKDF2 hash
+ * because this repository is public. ADMIN_PASSWORD on the Vercel project
+ * replaces it. To change it here: npm run hash-password -- 'new password'.
  */
-export const DEMO_ADMIN_PASSWORD = 'NORTHMAIN460';
+export const ADMIN_PASSWORD_HASH = 'pbkdf2-sha256$600000$tmkIsGA81SKBpp8MWGeaQg==$wfwZDetHDKZCzZdEvgtUxxoBrjnvIWYmXORwONGtfdU=';
 
 export function env(name: string): string | undefined {
   return process.env[name] ?? (import.meta.env as Record<string, string | undefined>)[name] ?? undefined;
 }
 
 export function getSecret(name: 'ADMIN_PASSWORD' | 'ADMIN_SESSION_SECRET'): string | null {
-  const configured = env(name);
-  if (configured) return configured;
-  return name === 'ADMIN_PASSWORD' ? DEMO_ADMIN_PASSWORD : null;
-}
-
-/** True while the panel is still protected by the public demo password. */
-export function usingDemoPassword(): boolean {
-  return !env('ADMIN_PASSWORD');
+  return env(name) ?? null;
 }
 
 let driver: Driver | null | undefined;

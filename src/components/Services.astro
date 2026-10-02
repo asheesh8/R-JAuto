@@ -39,7 +39,7 @@ const tag = (s: ServiceView) => {
 
     <ul class="svc__list">
       {services.map((s) => (
-        <li class:list={['row', { 'row--off': !s.bookable }]} data-reveal>
+        <li class:list={['row', { 'row--off': !s.bookable }]} id={`svc-${s.id}`} data-reveal>
           <div class="row__text">
             {tag(s) && <p class:list={['row__tag', { off: !s.bookable }]}>{tag(s)}</p>}
             <h3 class="row__name">{s.name}</h3>
@@ -78,6 +78,9 @@ const tag = (s: ServiceView) => {
   .row__note { font-size: var(--t-xs); color: var(--ink-2); font-style: italic; }
   .row__items { display: none; }
   .row--off .row__photo img { filter: grayscale(1) contrast(0.9); opacity: 0.75; }
+  /* Landing here from a hero tile: mark the one they asked about. */
+  .row:target .row__photo { box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--green); }
+  .row:target .row__name { color: var(--green); }
 
   @media (max-width: 1100px) {
     .svc__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }

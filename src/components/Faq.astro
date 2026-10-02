@@ -21,7 +21,8 @@ import { faqs } from '@/data/business';
 </section>
 
 <style>
-  .faq { background: var(--card); border-top: 1px solid var(--line); }
+  /* Extra room at the foot for the footer skyline that rises into it. */
+  .faq { background: var(--card); border-top: 1px solid var(--line); padding-bottom: calc(var(--section-y) * 0.6 + var(--ftr-ridge)); }
   .faq__grid { display: grid; grid-template-columns: 0.7fr 1.3fr; gap: clamp(28px, 6vw, 96px); align-items: start; }
   .faq__list details { border-bottom: 1px solid var(--line); }
   .faq__list details:first-child { border-top: 1px solid var(--line); }

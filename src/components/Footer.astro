@@ -10,7 +10,7 @@ const year = new Date().getFullYear();
 ---
 
 <footer class="ftr">
-  <Ridge class="ftr__ridge" fit="stretch" front="var(--paper-2)" back="#e9eeeb" shift="72%" />
+  <Ridge class="ftr__ridge" fit="stretch" height="var(--ftr-ridge)" front="var(--paper-2)" back="#e9eeeb" shift="72%" />
   <Art name="barn" style="--w: 260px; --o: 0.1; --right: 3%; --bottom: 18px; --w-sm: 150px; --right-sm: -10px; --bottom-sm: auto; --top-sm: 20px; --o-sm: 0.1;" />
   <div class="wrap ftr__in">
     <div class="ftr__brand">
@@ -45,8 +45,10 @@ const year = new Date().getFullYear();
   .ftr__brand p { color: var(--ink-2); }
   .ftr__brand a { font-weight: 750; font-size: var(--t-lg); text-decoration: none; color: var(--ink); }
   .ftr__small { display: grid; gap: 8px; font-size: var(--t-xs); line-height: 1.5; color: var(--ink-3); justify-items: end; text-align: right; }
-  .ftr__small a { color: var(--ink-2); }
-  .ftr__small summary { cursor: pointer; }
+  /* Small print, but full-size targets: inline padding grows the tap area without moving the text. */
+  .ftr__small a { color: var(--ink-2); padding-block: 8px; }
+  .ftr__small summary { cursor: pointer; padding-block: 6px; margin-block: -6px; }
+  .ftr__small li { padding-block: 2px; }
   .ftr__small ul { list-style: none; margin-top: 8px; display: grid; gap: 2px; }
   @media (max-width: 760px) {
     .ftr__in { grid-template-columns: 1fr; }

@@ -52,10 +52,13 @@ const links = [
   const menu = hdr.querySelector<HTMLElement>('[data-menu]')!;
   const setOpen = (open: boolean) => {
     burger.setAttribute('aria-expanded', String(open));
+    if (open) {
+      menu.hidden = false;
+      void menu.offsetHeight; // lay it out once so the fade-in has a start point
+    }
     hdr.classList.toggle('is-open', open);
     document.documentElement.classList.toggle('menu-open', open);
-    if (open) menu.hidden = false;
-    else setTimeout(() => { if (!hdr.classList.contains('is-open')) menu.hidden = true; }, 300);
+    if (!open) setTimeout(() => { if (!hdr.classList.contains('is-open')) menu.hidden = true; }, 300);
   };
   burger.addEventListener('click', () => setOpen(burger.getAttribute('aria-expanded') !== 'true'));
   menu.querySelectorAll('[data-close]').forEach((a) => a.addEventListener('click', () => setOpen(false)));

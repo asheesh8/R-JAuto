@@ -22,7 +22,7 @@ const state = openState(content.hours);
       <address data-reveal style="--d:100ms">{company.streetLong}<br />{company.city}, {company.stateLong} {company.zip}</address>
       <p class="visit__tow" data-reveal style="--d:140ms">Getting towed in? Have it brought here and call so {company.contact} knows it's coming.</p>
       <div class="visit__cta" data-reveal style="--d:180ms">
-        <a class="btn" href={`tel:${company.phoneRaw}`}><Icon name="phone" weight="fill" /> Call <span class="num">{company.phone}</span></a>
+        <a class="btn" href={`tel:${company.phoneRaw}`} aria-label={`Call ${company.phone}`}><Icon name="phone" weight="fill" /> <span class="num">{company.phone}</span></a>
         <a class="btn btn--line" href={company.directionsUrl} target="_blank" rel="noopener"><Icon name="navigation-arrow" /> Directions</a>
       </div>
     </div>
@@ -83,7 +83,9 @@ const state = openState(content.hours);
   .sign__name { font-size: 30px; font-weight: 700; letter-spacing: 0.01em; }
   address { font-style: normal; font-size: var(--t-lg); line-height: 1.45; }
   .visit__tow { color: var(--ink-2); max-width: 26em; }
-  .visit__cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+  /* Side by side when the column allows, otherwise two full-width buttons. */
+  .visit__cta { justify-self: stretch; max-width: 420px; display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+  .visit__cta .btn { flex: 1 1 auto; }
 
   .visit__hours { padding: 24px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); }
   .visit__hours h3 { font-size: var(--t-xl); letter-spacing: -0.015em; }

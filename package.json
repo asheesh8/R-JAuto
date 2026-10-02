@@ -11,7 +11,8 @@
     "check": "astro check",
     "models": "node scripts/optimize-models.mjs",
     "check:quotes": "node scripts/check-quotes.mjs",
-    "art": "node scripts/build-art.mjs"
+    "art": "node scripts/build-art.mjs",
+    "hash-password": "node scripts/hash-password.mjs"
   },
   "engines": {
     "node": ">=22.12.0"

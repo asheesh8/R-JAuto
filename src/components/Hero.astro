@@ -81,7 +81,7 @@ const pull = reviews.find((r) => r.name === 'Marcus N')!;
             <ul>
               {quick.map((s) => (
                 <li>
-                  <a href="#services">
+                  <a href={`#svc-${s.id}`}>
                     <Image src={photoFor(s.id)} alt="" widths={[96, 160]} sizes="52px" class="quick__img" />
                     <span class="quick__name">{s.name}</span>
                     <Icon name="arrow-right" size={14} class="quick__go" />
@@ -176,6 +176,9 @@ const pull = reviews.find((r) => r.name === 'Marcus N')!;
     bottom: 0;
     height: clamp(120px, 17vw, 250px);
     pointer-events: none;
+    /* Fade out at the foot so the range has no hard edge against the next row. */
+    -webkit-mask-image: linear-gradient(to bottom, #000 45%, transparent);
+    mask-image: linear-gradient(to bottom, #000 45%, transparent);
   }
   .hero__range :global(.ridge) { position: absolute; inset: 0; }
   .hero__meta {

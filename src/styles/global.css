@@ -49,6 +49,7 @@
   --section-y: clamp(44px, 6vw, 84px);
   --radius: 6px;
   --header-h: 68px;
+  --ftr-ridge: clamp(40px, 6vw, 88px); /* footer skyline, which overhangs the section above */
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
@@ -59,6 +60,10 @@
 *,
 *::before,
 *::after { box-sizing: border-box; }
+
+/* Any display rule on a class beats the browser's own [hidden] style, which
+   left the closed phone menu invisible but still on top of the page. */
+[hidden] { display: none !important; }
 
 html {
   overflow-x: clip;
