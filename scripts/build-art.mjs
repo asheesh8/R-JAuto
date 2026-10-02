@@ -2,13 +2,17 @@
 // transparent ink layers in public/art/. Ink darkness becomes alpha, so the
 // site can use them as CSS masks and tint them any colour.
 import sharp from 'sharp';
-import { readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 
 const dir = 'raw-assets/higgsfield/art';
-const sizes = {};
+// Merge into the existing manifest: the PNG sources are gitignored, so a fresh
+// clone may only hold the drawings being added.
+const manifest = 'src/data/art.json';
+const sizes = existsSync(manifest) ? JSON.parse(readFileSync(manifest, 'utf8')) : {};
+const wide = new Set(['barre', 'mountains', 'ridge']);
 for (const file of readdirSync(dir).filter((f) => f.endsWith('.png'))) {
   const name = file.replace('.png', '');
-  const max = name === 'barre' ? 1600 : 900;
+  const max = wide.has(name) ? 1600 : 900;
   const grey = await sharp(`${dir}/${file}`)
     .greyscale()
     .trim({ background: '#ffffff', threshold: 18 })
@@ -28,4 +32,4 @@ for (const file of readdirSync(dir).filter((f) => f.endsWith('.png'))) {
   sizes[name] = [info.width, info.height];
   console.log(`${name}: ${info.width}x${info.height} ${Math.round(out.size / 1024)}KB`);
 }
-writeFileSync('src/data/art.json', JSON.stringify(sizes, null, 2) + '\n');
+writeFileSync(manifest, JSON.stringify(sizes, null, 2) + '\n');

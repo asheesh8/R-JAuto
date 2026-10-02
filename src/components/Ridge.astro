@@ -1,0 +1,84 @@
+---
+/**
+ * A Green Mountains skyline (Camel's Hump in the middle) drawn as two layered
+ * silhouettes, used where one section meets the next so the edge reads as a
+ * ridgeline. `front` should match the section below it.
+ *
+ *   <Ridge front="var(--green)" back="#8fb39c" />
+ */
+export interface Props {
+  front: string;
+  back?: string;
+  /** Overall height of the skyline band. */
+  height?: string;
+  /** Slides the back range sideways so the two layers don't line up. */
+  shift?: string;
+  /**
+   * natural (default): the skyline keeps its real proportions, so Camel's Hump
+   * reads as a peak; needs a band around 13vw tall.
+   * stretch: squeezed to fit any band height; reads as low rolling hills.
+   */
+  fit?: 'natural' | 'stretch';
+  class?: string;
+}
+const { front, back, height, shift = '30%', fit = 'natural', class: cls } = Astro.props;
+const h = height ?? (fit === 'natural' ? 'clamp(56px, 13vw, 200px)' : 'clamp(48px, 8vw, 120px)');
+---
+<div class:list={['ridge', `ridge--${fit}`, cls]} aria-hidden="true" style={`--front:${front}; --back:${back ?? 'transparent'}; --h:${h}; --shift:${shift};`}>
+  {back && <span class="ridge__back"></span>}
+  <span class="ridge__front"></span>
+</div>
+
+<style>
+  .ridge {
+    position: relative;
+    height: var(--h);
+    margin-bottom: -1px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .ridge span {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* Longhands only: the mask shorthand would reset the per-layer size and
+       position set below, since this selector is more specific. */
+    -webkit-mask-image: url(/art/ridge.webp);
+    mask-image: url(/art/ridge.webp);
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+  }
+  .ridge__back { top: 0; background: var(--back); }
+  .ridge__front { background: var(--front); }
+
+  /* Natural: the image keeps its aspect ratio and hangs from the top of each
+     layer, so the peaks show and the solid foot of the range fills below. */
+  .ridge--natural .ridge__back {
+    -webkit-mask-size: 170% auto;
+    mask-size: 170% auto;
+    -webkit-mask-position: var(--shift) top;
+    mask-position: var(--shift) top;
+  }
+  .ridge--natural .ridge__front {
+    top: 32%;
+    -webkit-mask-size: 100% auto;
+    mask-size: 100% auto;
+    -webkit-mask-position: center top;
+    mask-position: center top;
+  }
+
+  .ridge--stretch .ridge__back {
+    -webkit-mask-size: 170% 100%;
+    mask-size: 170% 100%;
+    -webkit-mask-position: var(--shift) bottom;
+    mask-position: var(--shift) bottom;
+  }
+  .ridge--stretch .ridge__front {
+    top: 34%;
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-position: center bottom;
+    mask-position: center bottom;
+  }
+</style>

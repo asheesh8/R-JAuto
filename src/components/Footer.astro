@@ -1,5 +1,7 @@
 ---
 import Logo from './Logo.astro';
+import Art from './Art.astro';
+import Ridge from './Ridge.astro';
 import { company, modelCredits } from '@/data/business';
 import models from '@/data/models.json';
 
@@ -8,6 +10,8 @@ const year = new Date().getFullYear();
 ---
 
 <footer class="ftr">
+  <Ridge class="ftr__ridge" fit="stretch" front="var(--paper-2)" back="#e9eeeb" shift="72%" />
+  <Art name="barn" style="--w: 260px; --o: 0.1; --right: 3%; --bottom: 18px; --w-sm: 150px; --right-sm: -10px; --bottom-sm: auto; --top-sm: 20px; --o-sm: 0.1;" />
   <div class="wrap ftr__in">
     <div class="ftr__brand">
       <Logo />
@@ -33,7 +37,9 @@ const year = new Date().getFullYear();
 </footer>
 
 <style>
-  .ftr { border-top: 1px solid var(--line); padding: 48px 0 40px; background: var(--paper-2); }
+  .ftr { position: relative; padding: 48px 0 40px; background: var(--paper-2); }
+  .ftr :global(.ftr__ridge) { position: absolute; left: 0; right: 0; bottom: 100%; }
+  .ftr__in { position: relative; z-index: 1; }
   .ftr__in { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
   .ftr__brand { display: grid; gap: 10px; }
   .ftr__brand p { color: var(--ink-2); }

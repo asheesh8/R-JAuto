@@ -9,6 +9,7 @@ import Quotes from '@/components/Quotes.astro';
 import Season from '@/components/Season.astro';
 import Visit from '@/components/Visit.astro';
 import Faq from '@/components/Faq.astro';
+import Ridge from '@/components/Ridge.astro';
 import { company } from '@/data/business';
 import { activePromotions, getContent, viewServices } from '@/lib/content';
 
@@ -26,6 +27,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=15, sta
   <Rating />
   <Deals promotions={promotions} />
   <Services services={services} />
+  <Ridge front="var(--green)" back="#a9c6b3" shift="28%" />
   <RescueLog />
   <Quotes />
   <Season services={services} />

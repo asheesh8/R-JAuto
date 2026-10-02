@@ -20,4 +20,5 @@ All generated with Higgsfield (gpt_image_2_5) for this site. None of them show R
 - Service photos: `svc-*.png`, `belt-tensioner.png`, `cooling.png`, `undercoating.png`.
 - Mood: `garage-bay-dusk.png`, `winter-road.png`.
 - Line art: `art/*.png`, converted to transparent ink layers by `scripts/build-art.mjs`.
+- Vermont set (added 2026-10-02): `art/mountains.png` (Green Mountains with Camel's Hump), `art/ridge.png` (solid skyline silhouette, used as a CSS mask by `src/components/Ridge.astro`), `art/maple.png`, `art/bridge.png` (covered bridge), `art/barn.png`, `art/sugarhouse.png`.
 - Granite texture: `granite-slab.png`.

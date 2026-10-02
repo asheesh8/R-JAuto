@@ -3,6 +3,7 @@ import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import Icon from './Icon.astro';
 import Art from './Art.astro';
+import Ridge from './Ridge.astro';
 import { company, rating } from '@/data/business';
 import { reviews } from '@/data/reviews';
 import { openState, viewServices, type SiteContent } from '@/lib/content';
@@ -56,6 +57,10 @@ const pull = reviews.find((r) => r.name === 'Marcus N')!;
   </div>
 
   <section class="hero" aria-labelledby="hero-h">
+    <div class="hero__range" aria-hidden="true">
+      <Ridge front="#e2e9e4" back="#e9eeeb" height="100%" shift="65%" />
+      <Art name="mountains" style="--w: 100%; --o: 0.1; --left: 0; --bottom: 0; --w-sm: 100%; --o-sm: 0.1;" />
+    </div>
     <div class="wrap">
       <div class="hero__copy">
         <p class="hero__meta" data-reveal>
@@ -162,7 +167,17 @@ const pull = reviews.find((r) => r.name === 'Marcus N')!;
     align-items: center;
     padding-block: 28px 40px;
   }
+  .hero > .wrap { position: relative; z-index: 2; }
   .hero__copy { position: relative; z-index: 2; max-width: 560px; }
+  .hero__range {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: clamp(120px, 17vw, 250px);
+    pointer-events: none;
+  }
+  .hero__range :global(.ridge) { position: absolute; inset: 0; }
   .hero__meta {
     display: inline-flex;
     flex-wrap: wrap;
