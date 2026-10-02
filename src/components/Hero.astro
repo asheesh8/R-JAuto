@@ -1,13 +1,30 @@
 ---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
 import Icon from './Icon.astro';
 import Art from './Art.astro';
 import { company, rating } from '@/data/business';
-import { openState, type SiteContent } from '@/lib/content';
+import { reviews } from '@/data/reviews';
+import { openState, viewServices, type SiteContent } from '@/lib/content';
+import fallback from '@/assets/photos/garage-bay-dusk.jpg';
 
 export interface Props { content: SiteContent }
 const { content } = Astro.props;
 const saturday = !content.hours.sat.closed;
 const state = openState(content.hours);
+
+// Four quick links into the service list, following whatever is bookable in
+// the admin. Brakes leads because it is the part spinning beside them.
+const photos = import.meta.glob<{ default: ImageMetadata }>('/src/assets/photos/services/*.jpg', { eager: true });
+const photoFor = (id: string) => photos[`/src/assets/photos/services/${id}.jpg`]?.default ?? fallback;
+const bookable = viewServices(content.services).filter((s) => s.bookable);
+const preferred = ['brakes', 'belts', 'cooling', 'repairs'];
+const quick = [
+  ...preferred.map((id) => bookable.find((s) => s.id === id)).filter((s) => !!s),
+  ...bookable.filter((s) => !preferred.includes(s.id)),
+].slice(0, 4);
+
+const pull = reviews.find((r) => r.name === 'Marcus N')!;
 ---
 
 <div class="brk" data-brake-track>
@@ -16,6 +33,21 @@ const state = openState(content.hours);
   <Art name="sparkplug" style="--w: 64px; --r: 16deg; --o: 0.22; --top: 9%; --left: 44%; --w-sm: 46px; --top-sm: 22px; --left-sm: 18px; --r-sm: -18deg; --o-sm: 0.3;" />
   <Art name="wrench" style="--w: 300px; --r: -16deg; --o: 0.09; --top: 70svh; --left: -90px; --w-sm: 180px; --top-sm: calc(40svh - 60px); --left-sm: auto; --right-sm: -40px; --r-sm: -24deg; --o-sm: 0.13;" />
   <Art name="tire" style="--w: 360px; --r: 8deg; --o: 0.07; --bottom: 4%; --left: 30%; --w-sm: 220px; --bottom-sm: 1%; --left-sm: auto; --right-sm: -80px; --o-sm: 0.08;" />
+
+  <div class="hero__aside" aria-label="From the shop">
+    <figure class="float float--review" data-reveal style="--d:300ms">
+      <p class="float__rate">
+        <span class="float__stars" aria-hidden="true">{Array.from({ length: 5 }).map(() => <Icon name="star" weight="fill" size={14} />)}</span>
+        <span><strong class="num">{rating.value}</strong> on Google, {rating.count} reviews</span>
+      </p>
+      <blockquote>“{pull.quote}”</blockquote>
+      <figcaption>{pull.name}, Google review</figcaption>
+    </figure>
+    <div class="float float--tow" data-reveal style="--d:420ms">
+      <span class="float__icon"><Icon name="map-pin" weight="fill" size={18} /></span>
+      <p><strong>Broke down nearby?</strong> Have it towed to {company.street} and call ahead.</p>
+    </div>
+  </div>
 
   <section class="hero" aria-labelledby="hero-h">
     <div class="wrap">
@@ -32,10 +64,22 @@ const state = openState(content.hours);
           <a class="btn hero__call" href={`tel:${company.phoneRaw}`}><Icon name="phone" weight="fill" /> Call<span class="num hero__num">&nbsp;{company.phone}</span></a>
           <a class="btn btn--line" href="#services">See services <Icon name="arrow-right" /></a>
         </div>
-        <a class="hero__rate" href={company.mapsUrl} target="_blank" rel="noopener" data-reveal style="--d:220ms">
-          <span class="hero__stars" aria-hidden="true">{Array.from({ length: 5 }).map(() => <Icon name="star" weight="fill" size={16} />)}</span>
-          <span><strong class="num">{rating.value}</strong> on Google from {rating.count} reviews</span>
-        </a>
+        {quick.length > 0 && (
+          <nav class="quick" aria-label="Popular services" data-reveal style="--d:220ms">
+            <p class="quick__label">Most asked about</p>
+            <ul>
+              {quick.map((s) => (
+                <li>
+                  <a href="#services">
+                    <Image src={photoFor(s.id)} alt="" widths={[96, 160]} sizes="52px" class="quick__img" />
+                    <span class="quick__name">{s.name}</span>
+                    <Icon name="arrow-right" size={14} class="quick__go" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
       </div>
     </div>
   </section>
@@ -110,10 +154,10 @@ const state = openState(content.hours);
 
   .hero {
     position: relative;
-    min-height: calc(100svh - var(--header-h) - 40px);
+    min-height: calc(100svh - var(--header-h));
     display: flex;
     align-items: center;
-    padding-block: 40px 88px;
+    padding-block: 28px 40px;
   }
   .hero__copy { position: relative; z-index: 2; max-width: 560px; }
   .hero__meta {
@@ -132,10 +176,53 @@ const state = openState(content.hours);
   .hero__addr { color: var(--ink-3); padding-left: 14px; border-left: 1px solid var(--line-2); }
   .hero__lede { margin-top: 22px; max-width: 30em; }
   .hero__cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
-  .hero__rate { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 24px; color: var(--ink-2); text-decoration: none; font-size: var(--t-sm); }
-  .hero__rate strong { color: var(--ink); font-weight: 800; }
-  .hero__rate:hover span:last-child { text-decoration: underline; text-underline-offset: 3px; }
-  .hero__stars { display: inline-flex; gap: 2px; color: #e3a008; }
+
+  /* Popular services: real photos and real links where the page was blank. */
+  .quick { margin-top: 34px; }
+  .quick__label { font-size: var(--t-xs); font-weight: 700; color: var(--ink-3); margin-bottom: 10px; }
+  .quick ul { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 520px; }
+  .quick a {
+    display: grid;
+    grid-template-columns: 52px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 7px 12px 7px 7px;
+    border-radius: var(--radius);
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--line), 0 8px 18px -14px rgb(18 22 20 / 0.35);
+    text-decoration: none;
+    transition: box-shadow 180ms ease, transform 180ms var(--ease-out);
+  }
+  .quick a:hover { box-shadow: 0 0 0 1.5px var(--green), 0 10px 22px -14px rgb(18 22 20 / 0.4); transform: translateY(-1px); }
+  .quick :global(.quick__img) { width: 52px; height: 52px; border-radius: 4px; object-fit: cover; }
+  .quick__name { font-size: var(--t-sm); font-weight: 750; line-height: 1.2; padding-top: 2px; }
+  .quick :global(.quick__go) { color: var(--green); }
+
+  /* Cards pinned over the brake, in the hero row only. */
+  .hero__aside {
+    grid-column: 2;
+    grid-row: 1;
+    position: relative;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .float {
+    position: absolute;
+    margin: 0;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 0 1px var(--line), 0 18px 36px -18px rgb(18 22 20 / 0.35);
+    pointer-events: auto;
+  }
+  .float--review { top: 9%; left: 3%; width: 240px; padding: 14px 16px 12px; }
+  .float__rate { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: var(--t-xs); color: var(--ink-2); }
+  .float__rate strong { color: var(--ink); font-weight: 800; }
+  .float__stars { display: inline-flex; gap: 1px; color: #e3a008; }
+  .float--review blockquote { margin: 8px 0 0; font-size: var(--t-lg); line-height: 1.25; font-weight: 750; letter-spacing: -0.01em; }
+  .float--review figcaption { margin-top: 6px; font-size: var(--t-xs); color: var(--ink-3); }
+  .float--tow { bottom: 9%; right: 4%; width: 270px; display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start; padding: 14px 16px 12px; font-size: var(--t-sm); line-height: 1.45; color: var(--ink-2); }
+  .float--tow strong { display: block; color: var(--ink); font-weight: 800; }
+  .float__icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--green-tint); color: var(--green); }
   .brakes__plate { display: none; }
 
   .brakes {
@@ -158,21 +245,33 @@ const state = openState(content.hours);
       grid-row: 1;
       position: relative;
       top: 0;
-      height: 40svh;
-      min-height: 250px;
+      height: 42svh;
+      min-height: 270px;
     }
     .hero { grid-row: 2; }
     .brakes { grid-row: 3; }
-    .hero { min-height: 0; padding-block: 0 56px; }
+    .hero { min-height: 0; padding-block: 30px 44px; }
+    .hero__aside { grid-column: 1; grid-row: 1; }
+    .float--review { top: auto; left: auto; bottom: -14px; right: var(--gutter); width: 196px; padding: 9px 11px 8px; }
+    .float__rate { font-size: 12px; gap: 2px 6px; }
+    .float--review blockquote { font-size: var(--t-sm); line-height: 1.25; margin-top: 4px; }
+    .float--review figcaption { font-size: 11.5px; margin-top: 3px; }
+    .float--tow { display: none; }
     .brakes { min-height: 0; padding-block: 16px 72px; }
-    .hero__meta { margin-bottom: 18px; }
+    .hero__meta { margin-bottom: 16px; }
     .brakes__plate { display: block; margin-top: 36px; }
   }
   /* The sticky call bar takes over on phones, so the hero keeps one button. */
+  /* Phones: the sticky bar has Call, and the service tiles below replace
+     "See services", so the hero goes straight from the pitch to the tiles. */
   @media (max-width: 720px) {
-    .hero__call { display: none; }
-    .hero__cta { margin-top: 26px; }
-    .hero__cta .btn { width: 100%; }
+    .hero__cta { display: none; }
+    .quick { margin-top: 24px; }
+  }
+  @media (max-width: 380px) {
+    .quick a { grid-template-columns: 40px 1fr; gap: 9px; }
+    .quick :global(.quick__img) { width: 40px; height: 40px; }
+    .quick :global(.quick__go) { display: none; }
   }
   @media (max-width: 440px) {
     .hero__addr { display: none; }
