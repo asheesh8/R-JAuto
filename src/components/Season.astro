@@ -1,0 +1,40 @@
+---
+import { Image } from 'astro:assets';
+import road from '@/assets/photos/winter-road.jpg';
+import { MONTHS, type ServiceView } from '@/lib/content';
+
+export interface Props { services: ServiceView[] }
+const { services } = Astro.props;
+// Follows whatever John sets for undercoating in /admin.
+const uc = services.find((s) => s.id === 'undercoating' && s.status === 'seasonal');
+---
+{uc && (
+  <section class="season" aria-labelledby="season-h">
+    <div class="season__img" aria-hidden="true">
+      <Image src={road} alt="" widths={[800, 1344]} sizes="100vw" loading="lazy" />
+    </div>
+    <div class="wrap season__in">
+      {uc.bookable ? (
+        <>
+          <h2 id="season-h" data-reveal>Undercoat it before the salt trucks roll.</h2>
+          <p data-reveal style="--d:80ms">Undercoating runs {MONTHS[uc.seasonStart - 1]} through {MONTHS[uc.seasonEnd - 1]}. Call to get on the list.</p>
+        </>
+      ) : (
+        <>
+          <h2 id="season-h" data-reveal>Undercoating is done for the winter.</h2>
+          <p data-reveal style="--d:80ms">It's back in {MONTHS[uc.seasonStart - 1]}, once the frames are dry and the air is warm enough for it to cure. Everything else is open.</p>
+        </>
+      )}
+    </div>
+  </section>
+)}
+
+<style>
+  .season { position: relative; min-height: 420px; display: flex; align-items: flex-end; color: #fff; overflow: hidden; }
+  .season__img { position: absolute; inset: 0; }
+  .season__img :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .season__img::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgb(10 14 12 / 0.05) 30%, rgb(10 14 12 / 0.72)); }
+  .season__in { position: relative; padding-block: 56px; display: grid; gap: 10px; }
+  .season h2 { font-size: clamp(1.8rem, 3.6vw, 3rem); letter-spacing: -0.03em; max-width: 18em; }
+  .season p { font-size: var(--t-lg); max-width: 34em; color: rgb(255 255 255 / 0.88); }
+</style>

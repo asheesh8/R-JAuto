@@ -1,0 +1,156 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { company } from '@/data/business';
+
+export interface Props { openLabel: string; open: boolean }
+const { openLabel, open } = Astro.props;
+
+const links = [
+  { href: '/#services', label: 'Services' },
+  { href: '/#reviews', label: 'Reviews' },
+  { href: '/#visit', label: 'Hours' },
+];
+---
+
+<header class="hdr" data-hdr>
+  <div class="hdr__bar wrap">
+    <a class="hdr__brand" href="/" aria-label={`${company.name}, home`}><Logo /></a>
+
+    <nav class="hdr__nav" aria-label="Main">
+      <ul>{links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>
+    </nav>
+
+    <div class="hdr__actions">
+      <span class="hdr__status status" data-open={String(open)}>{openLabel}</span>
+      <a class="btn btn--sm hdr__call" href={`tel:${company.phoneRaw}`}>
+        <Icon name="phone" weight="fill" size={16} /> <span class="num">{company.phone}</span>
+      </a>
+      <button class="hdr__burger" type="button" aria-expanded="false" aria-controls="menu" data-burger>
+        <span class="sr-only">Menu</span>
+        <span class="hdr__line"></span>
+        <span class="hdr__line"></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="menu" id="menu" data-menu hidden>
+    <nav aria-label="Mobile">
+      <ul>{links.map((l, i) => <li style={`--i:${i}`}><a href={l.href} data-close>{l.label}</a></li>)}</ul>
+    </nav>
+    <div class="menu__foot" style={`--i:${links.length}`}>
+      <p class="status" data-open={String(open)}>{openLabel}</p>
+      <a class="btn" href={`tel:${company.phoneRaw}`}><Icon name="phone" weight="fill" /> Call {company.phone}</a>
+      <a class="btn btn--line" href={company.directionsUrl} target="_blank" rel="noopener"><Icon name="navigation-arrow" /> Directions</a>
+    </div>
+  </div>
+</header>
+
+<script>
+  const hdr = document.querySelector<HTMLElement>('[data-hdr]')!;
+  const burger = hdr.querySelector<HTMLButtonElement>('[data-burger]')!;
+  const menu = hdr.querySelector<HTMLElement>('[data-menu]')!;
+  const setOpen = (open: boolean) => {
+    burger.setAttribute('aria-expanded', String(open));
+    hdr.classList.toggle('is-open', open);
+    document.documentElement.classList.toggle('menu-open', open);
+    if (open) menu.hidden = false;
+    else setTimeout(() => { if (!hdr.classList.contains('is-open')) menu.hidden = true; }, 300);
+  };
+  burger.addEventListener('click', () => setOpen(burger.getAttribute('aria-expanded') !== 'true'));
+  menu.querySelectorAll('[data-close]').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') setOpen(false); });
+</script>
+
+<style>
+  .hdr {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in srgb, var(--paper) 88%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .hdr__bar { height: var(--header-h); display: flex; align-items: center; gap: 28px; }
+  .hdr__brand { text-decoration: none; flex: none; }
+  .hdr__nav { margin-left: 12px; }
+  .hdr__nav ul { list-style: none; display: flex; gap: 4px; }
+  .hdr__nav a {
+    display: block;
+    padding: 9px 12px 7px;
+    border-radius: var(--radius);
+    font-size: var(--t-sm);
+    font-weight: 650;
+    text-decoration: none;
+    color: var(--ink-2);
+  }
+  .hdr__nav a:hover { color: var(--ink); background: var(--paper-2); }
+  .hdr__actions { margin-left: auto; display: flex; align-items: center; gap: 18px; }
+  .hdr__status { font-size: var(--t-sm); color: var(--ink-2); white-space: nowrap; font-weight: 600; }
+
+  .hdr__burger {
+    display: none;
+    width: 44px; height: 44px;
+    border: 0;
+    border-radius: var(--radius);
+    background: var(--paper-2);
+    position: relative;
+    cursor: pointer;
+  }
+  .hdr__line {
+    position: absolute;
+    left: 13px; right: 13px; top: 21px;
+    height: 2px;
+    background: currentColor;
+    transition: transform 280ms var(--ease-out);
+  }
+  .hdr__line:nth-child(2) { transform: translateY(-4px); }
+  .hdr__line:nth-child(3) { transform: translateY(4px); }
+  .is-open .hdr__line:nth-child(2) { transform: rotate(45deg); }
+  .is-open .hdr__line:nth-child(3) { transform: rotate(-45deg); }
+
+  .menu {
+    position: fixed;
+    inset: var(--header-h) 0 0 0;
+    background: var(--paper);
+    padding: 32px var(--gutter);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    opacity: 0;
+    transition: opacity 260ms var(--ease-out);
+  }
+  .is-open .menu { opacity: 1; }
+  .menu ul { list-style: none; display: grid; gap: 4px; }
+  .menu li, .menu__foot {
+    transform: translateY(10px);
+    opacity: 0;
+    transition: transform 400ms var(--ease-drawer), opacity 400ms var(--ease-drawer);
+    transition-delay: calc(var(--i) * 40ms);
+  }
+  .is-open .menu li, .is-open .menu__foot { transform: none; opacity: 1; }
+  .menu a[data-close] {
+    display: block;
+    padding: 10px 0;
+    font-size: clamp(1.9rem, 8vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    text-decoration: none;
+  }
+  .menu__foot { display: grid; gap: 12px; }
+  .menu__foot .status { color: var(--ink-2); }
+  :global(html.menu-open) { overflow: hidden; }
+
+  @media (max-width: 1080px) { .hdr__status { display: none; } }
+  @media (max-width: 860px) {
+    .hdr__nav { display: none; }
+    .hdr__burger { display: block; }
+  }
+  @media (max-width: 560px) {
+    .hdr__call { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .menu, .menu li, .menu__foot { transition: none; }
+  }
+</style>

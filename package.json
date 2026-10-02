@@ -1,0 +1,39 @@
+{
+  "name": "rj-auto-service",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev --host 0.0.0.0 --port 4541",
+    "build": "astro build",
+    "preview": "astro preview --port 4542",
+    "astro": "astro",
+    "check": "astro check",
+    "models": "node scripts/optimize-models.mjs",
+    "check:quotes": "node scripts/check-quotes.mjs",
+    "art": "node scripts/build-art.mjs"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
+    "@astrojs/vercel": "^11.0.11",
+    "@fontsource-variable/overpass": "^5.3.0",
+    "@phosphor-icons/core": "^2.1.1",
+    "@vercel/blob": "^2.8.0",
+    "astro": "^7.3.5",
+    "sharp": "^0.35.5",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@gltf-transform/cli": "^4.5.1",
+    "@gltf-transform/core": "^4.5.1",
+    "@gltf-transform/extensions": "^4.5.1",
+    "@gltf-transform/functions": "^4.5.1",
+    "@types/three": "^0.186.0",
+    "meshoptimizer": "^1.3.0",
+    "typescript": "^6.0.3"
+  }
+}

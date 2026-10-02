@@ -1,0 +1,34 @@
+---
+import Base from '@/layouts/Base.astro';
+import Hero from '@/components/Hero.astro';
+import Rating from '@/components/Rating.astro';
+import Deals from '@/components/Deals.astro';
+import Services from '@/components/Services.astro';
+import RescueLog from '@/components/RescueLog.astro';
+import Quotes from '@/components/Quotes.astro';
+import Season from '@/components/Season.astro';
+import Visit from '@/components/Visit.astro';
+import Faq from '@/components/Faq.astro';
+import { company } from '@/data/business';
+import { activePromotions, getContent, viewServices } from '@/lib/content';
+
+// Rendered per request so changes saved in /admin show up without a deploy.
+export const prerender = false;
+
+const content = await getContent();
+const services = viewServices(content.services);
+const promotions = activePromotions(content.promotions);
+Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=15, stale-while-revalidate=60');
+---
+
+<Base title={`${company.name} | Auto Repair in Barre, Vermont`} description={company.shortDescription} content={content}>
+  <Hero content={content} />
+  <Rating />
+  <Deals promotions={promotions} />
+  <Services services={services} />
+  <RescueLog />
+  <Quotes />
+  <Season services={services} />
+  <Visit content={content} />
+  <Faq />
+</Base>

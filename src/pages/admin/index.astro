@@ -1,0 +1,557 @@
+---
+/**
+ * The shop's control panel. John signs in with the shop password and edits
+ * the four things that change: which services are offered (and when, for
+ * seasonal ones like undercoating), promotions, the announcement bar, and
+ * hours. Everything saves as one document; see ADMIN.md.
+ */
+import '@/styles/global.css';
+import Icon from '@/components/Icon.astro';
+import { company, DAY_LABELS, DAY_ORDER, DEFAULT_SERVICES } from '@/data/business';
+import { isSignedIn } from '@/lib/auth';
+import { getContent, MONTHS } from '@/lib/content';
+import { storeStatus, usingDemoPassword } from '@/lib/store';
+
+export const prerender = false;
+
+const signedIn = await isSignedIn(Astro.cookies);
+const error = Astro.url.searchParams.get('error');
+const content = signedIn ? await getContent() : null;
+const store = await storeStatus();
+const demo = usingDemoPassword();
+Astro.response.headers.set('Cache-Control', 'no-store');
+
+const statusOptions = [
+  { v: 'available', label: 'Offered', hint: 'Shown and bookable year-round' },
+  { v: 'seasonal', label: 'Seasonal', hint: 'Only bookable between the months below' },
+  { v: 'paused', label: 'Paused', hint: 'Shown greyed out with your note' },
+  { v: 'hidden', label: 'Hidden', hint: 'Not on the site at all' },
+];
+const knownIds = new Set(DEFAULT_SERVICES.map((s) => s.id));
+const updated = content?.updatedAt
+  ? new Date(content.updatedAt).toLocaleString('en-US', { timeZone: company.timeZone, dateStyle: 'medium', timeStyle: 'short' })
+  : null;
+---
+
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Shop admin | {company.name}</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body class="adm">
+    {!signedIn ? (
+      <main class="signin">
+        <form class="signin__card" method="post" action="/api/admin/login">
+          <p class="signin__brand">{company.name}</p>
+          <h1>Shop admin</h1>
+          <label for="pw">Password</label>
+          <input id="pw" name="password" type="password" autocomplete="current-password" required autofocus />
+          {error && <p class="err" role="alert">That password did not match. Try again.</p>}
+          <button class="btn" type="submit">Sign in</button>
+          <a class="signin__back" href="/">Back to the website</a>
+        </form>
+      </main>
+    ) : (
+      <>
+        <header class="bar">
+          <div class="bar__in">
+            <a class="bar__brand" href="/" target="_blank" rel="noopener">{company.name} <Icon name="arrow-up-right" size={14} /></a>
+            <nav class="tabs" aria-label="Sections">
+              <a href="#services" class="is-on">Services</a>
+              <a href="#promos">Promotions</a>
+              <a href="#notice">Announcement</a>
+              <a href="#hours">Hours</a>
+            </nav>
+            <form method="post" action="/api/admin/logout"><button class="bar__out" type="submit"><Icon name="sign-out" size={16} /> Sign out</button></form>
+          </div>
+        </header>
+
+        <main class="panel">
+          {demo && (
+            <p class="warn"><Icon name="warning" size={18} /> <span>This panel is still using the demo password. Set <code>ADMIN_PASSWORD</code> on the Vercel project before launch.</span></p>
+          )}
+          {!store.writable && (
+            <p class="warn"><Icon name="warning" size={18} /> <span>No storage is connected, so saving will fail. Add a Vercel Blob store to the project (see ADMIN.md).</span></p>
+          )}
+
+          <!-- Services -->
+          <section class="card" id="services" aria-labelledby="h-svc">
+            <div class="card__head">
+              <h2 id="h-svc">Services</h2>
+              <p>Turn services on and off, or make one seasonal. Undercoating, for example, is set to stop for the winter on its own.</p>
+            </div>
+            <ol class="list" data-list="services">
+              {content!.services.map((s) => (
+                <li class="item" data-item data-id={s.id} data-part={s.part} data-builtin={String(knownIds.has(s.id))}>
+                  <details>
+                    <summary>
+                      <span class="item__name" data-label>{s.name}</span>
+                      <span class={`pill pill--${s.status}`} data-pill>{statusOptions.find((o) => o.v === s.status)?.label}</span>
+                      <Icon name="caret-down" size={16} class="item__caret" />
+                    </summary>
+                    <div class="fields">
+                      <div class="f">
+                        <label>Name</label>
+                        <input name="name" value={s.name} maxlength="60" data-sync-label />
+                      </div>
+                      <fieldset class="f f--status">
+                        <legend>Status</legend>
+                        <div class="seg">
+                          {statusOptions.map((o) => (
+                            <label title={o.hint}><input type="radio" name={`status-${s.id}`} value={o.v} checked={s.status === o.v} data-status /> <span>{o.label}</span></label>
+                          ))}
+                        </div>
+                      </fieldset>
+                      <div class="f f--season" data-season hidden={s.status !== 'seasonal'}>
+                        <label>Season runs</label>
+                        <div class="row2">
+                          <select name="seasonStart" aria-label="From month">{MONTHS.map((m, i) => <option value={i + 1} selected={s.seasonStart === i + 1}>{m}</option>)}</select>
+                          <span>through</span>
+                          <select name="seasonEnd" aria-label="Through month">{MONTHS.map((m, i) => <option value={i + 1} selected={s.seasonEnd === i + 1}>{m}</option>)}</select>
+                        </div>
+                      </div>
+                      <div class="f f--wide">
+                        <label>Short description</label>
+                        <textarea name="blurb" rows="2" maxlength="220">{s.blurb}</textarea>
+                      </div>
+                      <div class="f f--wide">
+                        <label>What it covers <span class="hint">Separate with commas</span></label>
+                        <input name="items" value={s.items.join(', ')} maxlength="200" />
+                      </div>
+                      <div class="f f--wide">
+                        <label>Note when it is paused or out of season <span class="hint">Optional</span></label>
+                        <input name="note" value={s.note} maxlength="200" placeholder="e.g. Booked up until May" />
+                      </div>
+                      <div class="item__tools">
+                        <button type="button" class="tool" data-move="-1"><Icon name="arrow-down" size={14} class="flip" /> Move up</button>
+                        <button type="button" class="tool" data-move="1"><Icon name="arrow-down" size={14} /> Move down</button>
+                        <button type="button" class="tool tool--danger" data-remove><Icon name="trash" size={14} /> Remove</button>
+                      </div>
+                    </div>
+                  </details>
+                </li>
+              ))}
+            </ol>
+            <button type="button" class="add" data-add="services"><Icon name="plus" size={16} /> Add a service</button>
+          </section>
+
+          <!-- Promotions -->
+          <section class="card" id="promos" aria-labelledby="h-promo">
+            <div class="card__head">
+              <h2 id="h-promo">Promotions</h2>
+              <p>Live promotions show in the green bar at the top of the site and in a box under the reviews. Leave the dates empty to run until you switch it off.</p>
+            </div>
+            <ol class="list" data-list="promotions">
+              {content!.promotions.map((p) => (
+                <li class="item" data-item data-id={p.id}>
+                  <details>
+                    <summary>
+                      <span class="item__name" data-label>{p.title}</span>
+                      <span class={`pill ${p.active ? 'pill--available' : 'pill--hidden'}`} data-pill>{p.active ? 'Live' : 'Off'}</span>
+                      <Icon name="caret-down" size={16} class="item__caret" />
+                    </summary>
+                    <div class="fields">
+                      <label class="switch"><input type="checkbox" name="active" checked={p.active} data-active /> <span>Show on the website</span></label>
+                      <div class="f f--wide">
+                        <label>Headline</label>
+                        <input name="title" value={p.title} maxlength="80" data-sync-label />
+                      </div>
+                      <div class="f f--wide">
+                        <label>Details</label>
+                        <textarea name="detail" rows="2" maxlength="280">{p.detail}</textarea>
+                      </div>
+                      <div class="f"><label>Small label <span class="hint">e.g. Fall</span></label><input name="badge" value={p.badge} maxlength="24" /></div>
+                      <div class="f"><label>Fine print</label><input name="finePrint" value={p.finePrint} maxlength="200" /></div>
+                      <div class="f"><label>Starts</label><input type="date" name="starts" value={p.starts} /></div>
+                      <div class="f"><label>Ends</label><input type="date" name="ends" value={p.ends} /></div>
+                      <div class="item__tools">
+                        <button type="button" class="tool tool--danger" data-remove><Icon name="trash" size={14} /> Remove</button>
+                      </div>
+                    </div>
+                  </details>
+                </li>
+              ))}
+            </ol>
+            <button type="button" class="add" data-add="promotions"><Icon name="plus" size={16} /> Add a promotion</button>
+          </section>
+
+          <!-- Announcement -->
+          <section class="card" id="notice" aria-labelledby="h-notice" data-notice>
+            <div class="card__head">
+              <h2 id="h-notice">Announcement bar</h2>
+              <p>A one-line message across the top of every page, like "Closed Friday for the holiday". It replaces the promotion bar while it is on.</p>
+            </div>
+            <div class="fields fields--flat">
+              <label class="switch"><input type="checkbox" name="active" checked={content!.announcement.active} /> <span>Show the announcement</span></label>
+              <div class="f f--wide"><label>Message</label><input name="text" value={content!.announcement.text} maxlength="160" /></div>
+              <fieldset class="f">
+                <legend>Style</legend>
+                <div class="seg">
+                  <label><input type="radio" name="tone" value="info" checked={content!.announcement.tone === 'info'} /> <span>Green</span></label>
+                  <label><input type="radio" name="tone" value="alert" checked={content!.announcement.tone === 'alert'} /> <span>Yellow, for urgent</span></label>
+                </div>
+              </fieldset>
+            </div>
+          </section>
+
+          <!-- Hours -->
+          <section class="card" id="hours" aria-labelledby="h-hours" data-hours>
+            <div class="card__head">
+              <h2 id="h-hours">Hours</h2>
+              <p>These drive the "Open now" sign on the site and what Google reads from it.</p>
+            </div>
+            <div class="hours">
+              {DAY_ORDER.map((d) => {
+                const h = content!.hours[d];
+                return (
+                  <div class="hours__row" data-day={d}>
+                    <span class="hours__day">{DAY_LABELS[d]}</span>
+                    <label class="switch switch--sm"><input type="checkbox" name="closed" checked={h.closed} /> <span>Closed</span></label>
+                    <input type="time" name="open" value={h.open} aria-label={`${DAY_LABELS[d]} opens`} disabled={h.closed} />
+                    <span class="hours__to">to</span>
+                    <input type="time" name="close" value={h.close} aria-label={`${DAY_LABELS[d]} closes`} disabled={h.closed} />
+                  </div>
+                );
+              })}
+              <div class="f f--wide"><label>Note under the hours <span class="hint">Optional</span></label><input name="hoursNote" value={content!.hoursNote} maxlength="160" placeholder="e.g. Closed Thanksgiving week" /></div>
+            </div>
+          </section>
+        </main>
+
+        <footer class="savebar">
+          <div class="savebar__in">
+            <p class="savebar__msg" data-msg aria-live="polite">{updated ? `Last saved ${updated}` : 'Showing the original website content'}</p>
+            <button class="btn" type="button" data-save><Icon name="floppy-disk" size={18} /> Save changes</button>
+          </div>
+        </footer>
+
+        <template id="tpl-services">
+          <li class="item" data-item data-id="" data-part="ratchet" data-builtin="false">
+            <details open>
+              <summary>
+                <span class="item__name" data-label>New service</span>
+                <span class="pill pill--available" data-pill>Offered</span>
+                <Icon name="caret-down" size={16} class="item__caret" />
+              </summary>
+              <div class="fields">
+                <div class="f"><label>Name</label><input name="name" value="New service" maxlength="60" data-sync-label /></div>
+                <fieldset class="f f--status">
+                  <legend>Status</legend>
+                  <div class="seg">
+                    {statusOptions.map((o) => (
+                      <label title={o.hint}><input type="radio" name="status-new" value={o.v} checked={o.v === 'available'} data-status /> <span>{o.label}</span></label>
+                    ))}
+                  </div>
+                </fieldset>
+                <div class="f f--season" data-season hidden>
+                  <label>Season runs</label>
+                  <div class="row2">
+                    <select name="seasonStart" aria-label="From month">{MONTHS.map((m, i) => <option value={i + 1} selected={i === 3}>{m}</option>)}</select>
+                    <span>through</span>
+                    <select name="seasonEnd" aria-label="Through month">{MONTHS.map((m, i) => <option value={i + 1} selected={i === 10}>{m}</option>)}</select>
+                  </div>
+                </div>
+                <div class="f f--wide"><label>Short description</label><textarea name="blurb" rows="2" maxlength="220"></textarea></div>
+                <div class="f f--wide"><label>What it covers <span class="hint">Separate with commas</span></label><input name="items" value="" maxlength="200" /></div>
+                <div class="f f--wide"><label>Note when it is paused or out of season <span class="hint">Optional</span></label><input name="note" value="" maxlength="200" /></div>
+                <div class="item__tools">
+                  <button type="button" class="tool" data-move="-1"><Icon name="arrow-down" size={14} class="flip" /> Move up</button>
+                  <button type="button" class="tool" data-move="1"><Icon name="arrow-down" size={14} /> Move down</button>
+                  <button type="button" class="tool tool--danger" data-remove><Icon name="trash" size={14} /> Remove</button>
+                </div>
+              </div>
+            </details>
+          </li>
+        </template>
+
+        <template id="tpl-promotions">
+          <li class="item" data-item data-id="">
+            <details open>
+              <summary>
+                <span class="item__name" data-label>New promotion</span>
+                <span class="pill pill--hidden" data-pill>Off</span>
+                <Icon name="caret-down" size={16} class="item__caret" />
+              </summary>
+              <div class="fields">
+                <label class="switch"><input type="checkbox" name="active" data-active /> <span>Show on the website</span></label>
+                <div class="f f--wide"><label>Headline</label><input name="title" value="New promotion" maxlength="80" data-sync-label /></div>
+                <div class="f f--wide"><label>Details</label><textarea name="detail" rows="2" maxlength="280"></textarea></div>
+                <div class="f"><label>Small label <span class="hint">e.g. Fall</span></label><input name="badge" value="" maxlength="24" /></div>
+                <div class="f"><label>Fine print</label><input name="finePrint" value="" maxlength="200" /></div>
+                <div class="f"><label>Starts</label><input type="date" name="starts" value="" /></div>
+                <div class="f"><label>Ends</label><input type="date" name="ends" value="" /></div>
+                <div class="item__tools"><button type="button" class="tool tool--danger" data-remove><Icon name="trash" size={14} /> Remove</button></div>
+              </div>
+            </details>
+          </li>
+        </template>
+      </>
+    )}
+
+    <script>
+      const $ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector<T>(sel);
+      const $$ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => [...root.querySelectorAll<T>(sel)];
+      const saveBtn = $<HTMLButtonElement>('[data-save]');
+      const msg = $('[data-msg]');
+
+      if (saveBtn && msg) {
+        const labels: Record<string, string> = { available: 'Offered', seasonal: 'Seasonal', paused: 'Paused', hidden: 'Hidden' };
+        let dirty = false;
+        const markDirty = () => {
+          dirty = true;
+          msg.textContent = 'Unsaved changes';
+          msg.dataset.state = 'dirty';
+        };
+        const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+
+        const wire = (item: HTMLElement) => {
+          const label = $('[data-label]', item);
+          const pill = $('[data-pill]', item);
+          $<HTMLInputElement>('[data-sync-label]', item)?.addEventListener('input', (e) => {
+            if (label) label.textContent = (e.target as HTMLInputElement).value || 'Untitled';
+          });
+          $$<HTMLInputElement>('[data-status]', item).forEach((r) =>
+            r.addEventListener('change', () => {
+              $('[data-season]', item)!.hidden = r.value !== 'seasonal';
+              if (pill) {
+                pill.textContent = labels[r.value];
+                pill.className = `pill pill--${r.value}`;
+              }
+            }),
+          );
+          $<HTMLInputElement>('[data-active]', item)?.addEventListener('change', (e) => {
+            const on = (e.target as HTMLInputElement).checked;
+            if (pill) {
+              pill.textContent = on ? 'Live' : 'Off';
+              pill.className = `pill ${on ? 'pill--available' : 'pill--hidden'}`;
+            }
+          });
+          $$<HTMLButtonElement>('[data-move]', item).forEach((b) =>
+            b.addEventListener('click', () => {
+              const dir = Number(b.dataset.move);
+              const sib = dir < 0 ? item.previousElementSibling : item.nextElementSibling;
+              if (!sib) return;
+              dir < 0 ? sib.before(item) : sib.after(item);
+              markDirty();
+            }),
+          );
+          $('[data-remove]', item)?.addEventListener('click', () => {
+            const name = label?.textContent ?? 'this';
+            if (!confirm(`Remove "${name}"? It comes off the website when you save.`)) return;
+            item.remove();
+            markDirty();
+          });
+        };
+        $$('[data-item]').forEach(wire);
+
+        $$<HTMLButtonElement>('[data-add]').forEach((b) =>
+          b.addEventListener('click', () => {
+            const kind = b.dataset.add!;
+            const tpl = document.getElementById(`tpl-${kind}`) as HTMLTemplateElement;
+            const node = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+            const uid = `${kind === 'services' ? 'service' : 'promo'}-${Date.now().toString(36)}`;
+            node.dataset.id = uid;
+            $$<HTMLInputElement>('[data-status]', node).forEach((r) => (r.name = `status-${uid}`));
+            $(`[data-list="${kind}"]`)!.append(node);
+            wire(node);
+            $<HTMLInputElement>('[data-sync-label]', node)?.select();
+            markDirty();
+          }),
+        );
+
+        document.addEventListener('input', markDirty);
+        document.addEventListener('change', (e) => {
+          const t = e.target as HTMLInputElement;
+          if (t.name === 'closed') {
+            const row = t.closest('[data-day]')!;
+            $$<HTMLInputElement>('input[type="time"]', row).forEach((i) => (i.disabled = t.checked));
+          }
+          markDirty();
+        });
+        addEventListener('beforeunload', (e) => {
+          if (dirty) e.preventDefault();
+        });
+
+        const val = (root: ParentNode, name: string) => $<HTMLInputElement>(`[name="${name}"]`, root)?.value ?? '';
+        const collect = () => ({
+          services: $$('[data-list="services"] [data-item]').map((it) => ({
+            id: it.dataset.id || slug(val(it, 'name')),
+            name: val(it, 'name'),
+            blurb: val(it, 'blurb'),
+            items: val(it, 'items').split(',').map((s) => s.trim()).filter(Boolean),
+            part: it.dataset.part,
+            status: $<HTMLInputElement>('[data-status]:checked', it)?.value ?? 'available',
+            seasonStart: Number(val(it, 'seasonStart')),
+            seasonEnd: Number(val(it, 'seasonEnd')),
+            note: val(it, 'note'),
+          })),
+          promotions: $$('[data-list="promotions"] [data-item]').map((it) => ({
+            id: it.dataset.id,
+            active: $<HTMLInputElement>('[name="active"]', it)!.checked,
+            title: val(it, 'title'),
+            detail: val(it, 'detail'),
+            finePrint: val(it, 'finePrint'),
+            badge: val(it, 'badge'),
+            starts: val(it, 'starts'),
+            ends: val(it, 'ends'),
+          })),
+          announcement: (() => {
+            const n = $('[data-notice]')!;
+            return {
+              active: $<HTMLInputElement>('[name="active"]', n)!.checked,
+              text: val(n, 'text'),
+              tone: $<HTMLInputElement>('[name="tone"]:checked', n)?.value ?? 'info',
+            };
+          })(),
+          hours: Object.fromEntries(
+            $$('[data-day]').map((r) => [
+              r.dataset.day,
+              { closed: $<HTMLInputElement>('[name="closed"]', r)!.checked, open: val(r, 'open'), close: val(r, 'close') },
+            ]),
+          ),
+          hoursNote: val($('[data-hours]')!, 'hoursNote'),
+        });
+
+        saveBtn.addEventListener('click', async () => {
+          saveBtn.disabled = true;
+          msg.textContent = 'Saving…';
+          msg.dataset.state = '';
+          try {
+            const res = await fetch('/api/admin/save', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify(collect()),
+            });
+            const out = await res.json();
+            if (!res.ok || !out.ok) throw new Error(out.error || 'Saving failed.');
+            dirty = false;
+            msg.textContent = 'Saved. The website updates within about 15 seconds.';
+            msg.dataset.state = 'ok';
+          } catch (err) {
+            msg.textContent = err instanceof Error ? err.message : 'Saving failed.';
+            msg.dataset.state = 'err';
+          } finally {
+            saveBtn.disabled = false;
+          }
+        });
+
+        // Highlight the tab for the section in view.
+        const tabs = $$<HTMLAnchorElement>('.tabs a');
+        const io = new IntersectionObserver(
+          (es) => es.forEach((e) => {
+            if (!e.isIntersecting) return;
+            tabs.forEach((t) => t.classList.toggle('is-on', t.hash === `#${e.target.id}`));
+          }),
+          { rootMargin: '-40% 0px -55% 0px' },
+        );
+        $$('.card[id]').forEach((c) => io.observe(c));
+      }
+    </script>
+
+    <style is:global>
+      .adm { background: var(--paper-2); min-height: 100svh; }
+      .adm input:not([type='checkbox']):not([type='radio']),
+      .adm select,
+      .adm textarea {
+        width: 100%;
+        font: inherit;
+        font-size: var(--t-sm);
+        padding: 10px 12px 8px;
+        border: 1px solid var(--line-2);
+        border-radius: var(--radius);
+        background: #fff;
+        color: var(--ink);
+      }
+      .adm input:focus,
+      .adm select:focus,
+      .adm textarea:focus { outline: 2px solid var(--green); outline-offset: 1px; border-color: transparent; }
+      .adm input:disabled { opacity: 0.45; }
+      .adm textarea { resize: vertical; line-height: 1.45; }
+      .adm label, .adm legend { font-size: var(--t-xs); font-weight: 750; color: var(--ink-2); }
+      .adm .hint { font-weight: 500; color: var(--ink-3); margin-left: 6px; }
+      .adm fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+
+      .signin { min-height: 100svh; display: grid; place-items: center; padding: 24px; }
+      .signin__card { width: min(380px, 100%); display: grid; gap: 10px; padding: 32px; background: #fff; border-radius: 10px; border: 1px solid var(--line); }
+      .signin__brand { font-size: var(--t-sm); font-weight: 700; color: var(--green); }
+      .signin__card h1 { font-size: var(--t-2xl); margin-bottom: 12px; }
+      .signin__card .btn { margin-top: 8px; }
+      .signin__back { font-size: var(--t-sm); color: var(--ink-3); text-align: center; margin-top: 4px; }
+      .err { font-size: var(--t-sm); color: #a8281b; }
+
+      .bar { position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 1px solid var(--line); }
+      .bar__in { max-width: 920px; margin: 0 auto; padding: 0 20px; height: 60px; display: flex; align-items: center; gap: 20px; }
+      .bar__brand { font-weight: 800; text-decoration: none; display: inline-flex; gap: 4px; align-items: center; white-space: nowrap; }
+      .tabs { display: flex; gap: 2px; margin-inline: auto; overflow-x: auto; }
+      .tabs a { padding: 8px 12px 6px; border-radius: var(--radius); font-size: var(--t-sm); font-weight: 650; color: var(--ink-2); text-decoration: none; white-space: nowrap; }
+      .tabs a.is-on { background: var(--green-tint); color: var(--green); }
+      .bar__out { display: inline-flex; gap: 6px; align-items: center; border: 0; background: none; font-size: var(--t-sm); font-weight: 650; color: var(--ink-2); cursor: pointer; white-space: nowrap; }
+
+      .panel { max-width: 920px; margin: 0 auto; padding: 24px 20px 120px; display: grid; gap: 20px; }
+      .warn { display: flex; gap: 10px; align-items: flex-start; padding: 14px 16px 12px; border-radius: var(--radius); background: #fff6d6; color: #5a4300; font-size: var(--t-sm); }
+      .warn svg { flex: none; margin-top: 1px; }
+      .card { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 24px; scroll-margin-top: 80px; }
+      .card__head h2 { font-size: var(--t-xl); letter-spacing: -0.015em; }
+      .card__head p { margin-top: 6px; color: var(--ink-2); font-size: var(--t-sm); max-width: 60ch; }
+
+      .list { list-style: none; margin-top: 18px; display: grid; gap: 8px; }
+      .item { border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); }
+      .item summary { display: flex; align-items: center; gap: 12px; padding: 14px 16px 12px; cursor: pointer; list-style: none; }
+      .item summary::-webkit-details-marker { display: none; }
+      .item__name { font-weight: 750; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .item__caret { transition: transform 200ms var(--ease-out); color: var(--ink-3); }
+      .item details[open] .item__caret { transform: rotate(180deg); }
+      .pill { font-size: 12px; font-weight: 750; padding: 4px 9px 2px; border-radius: 999px; white-space: nowrap; }
+      .pill--available { background: var(--green-tint); color: var(--green); }
+      .pill--seasonal { background: #fff1c7; color: #6b4e00; }
+      .pill--paused { background: #ececec; color: #4b4b4b; }
+      .pill--hidden { background: #f1f1f1; color: #8a8a8a; }
+
+      .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; padding: 4px 16px 18px; }
+      .fields--flat { padding: 18px 0 0; }
+      .f { display: grid; gap: 6px; align-content: start; }
+      .f--wide, .f--status, .switch { grid-column: 1 / -1; }
+      .f--status legend { margin-bottom: 6px; }
+      .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+      .seg label { cursor: pointer; }
+      .seg input { position: absolute; opacity: 0; pointer-events: none; }
+      .seg span { display: inline-block; padding: 8px 14px 6px; border-radius: var(--radius); border: 1px solid var(--line-2); font-size: var(--t-sm); font-weight: 650; color: var(--ink); background: #fff; }
+      .seg input:checked + span { background: var(--green); border-color: var(--green); color: #fff; }
+      .seg input:focus-visible + span { outline: 2px solid var(--green); outline-offset: 2px; }
+      .row2 { display: flex; align-items: center; gap: 10px; }
+      .row2 span { font-size: var(--t-sm); color: var(--ink-3); }
+      .switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; font-size: var(--t-sm) !important; color: var(--ink) !important; }
+      .switch input { width: 18px; height: 18px; accent-color: var(--green); }
+      .item__tools { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; padding-top: 6px; border-top: 1px solid var(--line); }
+      .tool { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px 5px; border: 1px solid var(--line-2); border-radius: var(--radius); background: #fff; font-size: var(--t-xs); font-weight: 700; cursor: pointer; }
+      .tool .flip { transform: rotate(180deg); }
+      .tool--danger { margin-left: auto; color: #a8281b; }
+      .add { margin-top: 12px; display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px 8px; border: 1.5px dashed var(--line-2); border-radius: var(--radius); background: none; font-weight: 700; font-size: var(--t-sm); cursor: pointer; color: var(--green); }
+
+      .hours { margin-top: 18px; display: grid; gap: 10px; }
+      .hours__row { display: grid; grid-template-columns: 110px 100px 1fr auto 1fr; align-items: center; gap: 10px; }
+      .hours__day { font-weight: 700; }
+      .hours__to { font-size: var(--t-sm); color: var(--ink-3); }
+      .switch--sm { grid-column: auto; }
+
+      .savebar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: #fff; border-top: 1px solid var(--line); }
+      .savebar__in { max-width: 920px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; gap: 16px; }
+      .savebar__msg { flex: 1; font-size: var(--t-sm); color: var(--ink-3); }
+      .savebar__msg[data-state='dirty'] { color: #6b4e00; font-weight: 700; }
+      .savebar__msg[data-state='ok'] { color: var(--green); font-weight: 700; }
+      .savebar__msg[data-state='err'] { color: #a8281b; font-weight: 700; }
+
+      @media (max-width: 640px) {
+        .fields { grid-template-columns: 1fr; }
+        .hours__row { grid-template-columns: 1fr auto; }
+        .hours__row input[type='time'] { grid-column: span 1; }
+        .hours__to { display: none; }
+        .bar__brand { display: none; }
+      }
+    </style>
+  </body>
+</html>

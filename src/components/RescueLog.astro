@@ -1,0 +1,84 @@
+---
+import Art from './Art.astro';
+import { tickets } from '@/data/reviews';
+---
+
+<section class="section log" id="log" aria-labelledby="log-h">
+  <Art name="barre" style="--w: min(100%, 1500px); --o: 0.16; --art: #f3f6f4; left: 50%; bottom: -1px; transform: translateX(-50%);" />
+  <Art name="gauge" class="hide-sm" style="--w: 280px; --o: 0.1; --art: #f3f6f4; right: -60px; top: 48px; --r: 10deg;" />
+  <div class="wrap">
+    <div class="log__head">
+      <h2 class="h-section" id="log-h" data-reveal>Broke down near Barre?</h2>
+      <p class="lede" data-reveal style="--d:60ms">
+        A lot of R&amp;J's reviews start the same way: a car quits far from home and the shop on North Main picks up.
+        A few of them, retold from the reviews.
+      </p>
+    </div>
+
+    <ol class="log__list">
+      {tickets.map((t, i) => (
+        <li class="slip" data-reveal style={`--d:${i * 80}ms; --tilt:${[-1.4, 0.9, -0.6, 1.2][i % 4]}deg`}>
+          <p class="slip__when">{t.when}</p>
+          <h3 class="slip__title">{t.title}</h3>
+          <p class="slip__what">{t.what}</p>
+          <blockquote class="slip__quote">
+            <p>“{t.quote}”</p>
+            <footer>{t.by}</footer>
+          </blockquote>
+          <span class="slip__stamp">{t.stamp}</span>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<style>
+  .log { background: var(--green); color: var(--on-green); overflow: hidden; padding-bottom: clamp(140px, 16vw, 240px); }
+  .log > .wrap { position: relative; z-index: 1; }
+  .log .lede { color: rgb(243 246 244 / 0.82); }
+  .log__head { display: grid; gap: 18px; max-width: 680px; margin-bottom: 56px; }
+  .log__list { list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; align-items: start; }
+  .slip {
+    position: relative;
+    background: #fbfcfb;
+    color: #121614;
+    padding: 22px 20px 24px;
+    border-radius: 2px;
+    box-shadow: 0 16px 28px -16px rgb(5 25 14 / 0.6);
+    transform: rotate(var(--tilt));
+    transition: transform 360ms var(--ease-out);
+    background-image: linear-gradient(transparent 31px, rgb(29 82 54 / 0.12) 32px);
+    background-size: 100% 32px;
+    background-position: 0 6px;
+  }
+  .slip:nth-child(even) { margin-top: 36px; }
+  .slip:hover { transform: rotate(0deg) translateY(-3px); }
+  .slip__when { font-size: var(--t-xs); font-weight: 750; color: #5f6964; }
+  .slip__title { margin-top: 6px; font-size: var(--t-lg); line-height: 1.2; letter-spacing: -0.01em; padding-right: 64px; }
+  .slip__what { margin-top: 10px; font-size: var(--t-sm); line-height: 1.55; color: #3f4743; }
+  .slip__quote { margin: 16px 0 0; }
+  .slip__quote p { font-size: var(--t-base); font-weight: 700; line-height: 1.4; }
+  .slip__quote footer { margin-top: 6px; font-size: var(--t-xs); color: #5f6964; }
+  .slip__stamp {
+    position: absolute;
+    right: 12px;
+    top: 16px;
+    max-width: 92px;
+    padding: 4px 7px 2px;
+    border: 2px solid #1d5236;
+    border-radius: 4px;
+    color: #1d5236;
+    font-size: 11px;
+    font-weight: 850;
+    line-height: 1.1;
+    text-align: center;
+    text-transform: uppercase;
+    transform: rotate(8deg);
+    opacity: 0.8;
+  }
+  @media (max-width: 1100px) {
+    .log__list { grid-template-columns: 1fr 1fr; }
+    .slip:nth-child(even) { margin-top: 0; }
+  }
+  @media (max-width: 620px) { .log__list { grid-template-columns: 1fr; } }
+</style>

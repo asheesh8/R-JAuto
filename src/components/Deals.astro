@@ -1,0 +1,36 @@
+---
+import type { Promotion } from '@/data/business';
+export interface Props { promotions: Promotion[] }
+const { promotions } = Astro.props;
+const fmt = (d: string) => new Date(`${d}T12:00:00`).toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+---
+{promotions.length > 0 && (
+  <section class="deals" id="deals" aria-labelledby="deals-h">
+    <div class="wrap">
+      <h2 class="deals__h" id="deals-h">Right now at R&amp;J</h2>
+      <ul class="deals__list">
+        {promotions.map((p) => (
+          <li class="deal" data-reveal>
+            {p.badge && <p class="deal__badge">{p.badge}</p>}
+            <h3>{p.title}</h3>
+            {p.detail && <p class="deal__detail">{p.detail}</p>}
+            <p class="deal__fine">
+              {p.ends ? `Through ${fmt(p.ends)}. ` : ''}{p.finePrint}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+)}
+
+<style>
+  .deals { padding-block: 56px 0; }
+  .deals__h { font-size: var(--t-xl); letter-spacing: -0.015em; margin-bottom: 18px; }
+  .deals__list { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .deal { padding: 24px; border-radius: var(--radius); background: var(--green-tint); border: 1px solid color-mix(in srgb, var(--green) 25%, transparent); display: grid; gap: 8px; align-content: start; }
+  .deal__badge { font-size: var(--t-sm); font-weight: 800; color: var(--green); }
+  .deal h3 { font-size: var(--t-xl); line-height: 1.15; letter-spacing: -0.015em; }
+  .deal__detail { color: var(--ink-2); }
+  .deal__fine { font-size: var(--t-xs); color: var(--ink-3); }
+</style>

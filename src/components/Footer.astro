@@ -1,0 +1,49 @@
+---
+import Logo from './Logo.astro';
+import { company, modelCredits } from '@/data/business';
+import models from '@/data/models.json';
+
+const credits = modelCredits.filter((c) => (models as Record<string, boolean>)[c.key]);
+const year = new Date().getFullYear();
+---
+
+<footer class="ftr">
+  <div class="wrap ftr__in">
+    <div class="ftr__brand">
+      <Logo />
+      <p>{company.streetLong}, {company.city}, {company.state} {company.zip}</p>
+      <p><a class="num" href={`tel:${company.phoneRaw}`}>{company.phone}</a></p>
+    </div>
+    <div class="ftr__small">
+      <p>© {year} {company.name}. Site by <a href="https://arkitechsolutions.com" target="_blank" rel="noopener">ArkiTech Solutions</a>.</p>
+      <p>Some photos on this page are AI-generated illustrations, not pictures of the shop.</p>
+      {credits.length > 0 && (
+        <details>
+          <summary>3D model credits</summary>
+          <ul>
+            {credits.map((c) => (
+              <li><a href={c.url} target="_blank" rel="noopener">{c.what}</a> by {c.who}{c.note ? ` (${c.note})` : ''}, CC BY 4.0</li>
+            ))}
+            <li>Belt tensioner and radiator models made for this site with Higgsfield.</li>
+          </ul>
+        </details>
+      )}
+    </div>
+  </div>
+</footer>
+
+<style>
+  .ftr { border-top: 1px solid var(--line); padding: 48px 0 40px; background: var(--paper-2); }
+  .ftr__in { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+  .ftr__brand { display: grid; gap: 10px; }
+  .ftr__brand p { color: var(--ink-2); }
+  .ftr__brand a { font-weight: 750; font-size: var(--t-lg); text-decoration: none; color: var(--ink); }
+  .ftr__small { display: grid; gap: 8px; font-size: var(--t-xs); line-height: 1.5; color: var(--ink-3); justify-items: end; text-align: right; }
+  .ftr__small a { color: var(--ink-2); }
+  .ftr__small summary { cursor: pointer; }
+  .ftr__small ul { list-style: none; margin-top: 8px; display: grid; gap: 2px; }
+  @media (max-width: 760px) {
+    .ftr__in { grid-template-columns: 1fr; }
+    .ftr__small { justify-items: start; text-align: left; }
+  }
+</style>

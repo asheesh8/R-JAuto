@@ -1,0 +1,118 @@
+---
+import '@/styles/global.css';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import MobileBar from '@/components/MobileBar.astro';
+import Announcement from '@/components/Announcement.astro';
+import { company, rating } from '@/data/business';
+import { activePromotions, hoursSchema, openState, viewServices, type SiteContent } from '@/lib/content';
+
+export interface Props {
+  title: string;
+  description: string;
+  content: SiteContent;
+  canonical?: string;
+  ogImage?: string;
+  noindex?: boolean;
+}
+
+const { title, description, content, canonical = Astro.url.pathname, ogImage = '/og.jpg', noindex = false } = Astro.props;
+
+const site = company.url;
+const canonicalUrl = new URL(canonical, site).href;
+const ogUrl = new URL(ogImage, site).href;
+const state = openState(content.hours);
+const promo = activePromotions(content.promotions)[0];
+
+const business = {
+  '@context': 'https://schema.org',
+  '@type': 'AutoRepair',
+  '@id': `${site}/#business`,
+  name: company.name,
+  alternateName: company.legalName,
+  description: company.shortDescription,
+  url: site,
+  telephone: company.phoneRaw,
+  image: ogUrl,
+  priceRange: '$$',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: company.streetLong,
+    addressLocality: company.city,
+    addressRegion: company.state,
+    postalCode: company.zip,
+    addressCountry: 'US',
+  },
+  geo: { '@type': 'GeoCoordinates', latitude: company.geo.lat, longitude: company.geo.lng },
+  hasMap: company.mapsUrl,
+  openingHoursSpecification: hoursSchema(content.hours),
+  aggregateRating: { '@type': 'AggregateRating', ratingValue: rating.value, reviewCount: rating.count, bestRating: 5 },
+  hasOfferCatalog: {
+    '@type': 'OfferCatalog',
+    name: 'Auto repair services',
+    itemListElement: viewServices(content.services).map((s) => ({ '@type': 'Offer', itemOffered: { '@type': 'Service', name: s.name } })),
+  },
+};
+---
+
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large'} />
+    <meta name="theme-color" content="#eef1ef" />
+    <meta name="format-detection" content="telephone=yes" />
+    <meta name="geo.region" content="US-VT" />
+    <meta name="geo.placename" content="Barre, Vermont" />
+    <meta name="geo.position" content={`${company.geo.lat};${company.geo.lng}`} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={company.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/models/brake.glb" as="fetch" crossorigin="anonymous" />
+
+    <script type="application/ld+json" set:html={JSON.stringify(business)} is:inline />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <Announcement announcement={content.announcement} promo={promo} />
+    <Header openLabel={state.label} open={state.open} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    <MobileBar />
+
+    <script>
+      const els = document.querySelectorAll<HTMLElement>('[data-reveal]');
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (e.isIntersecting) {
+                e.target.classList.add('is-in');
+                io.unobserve(e.target);
+              }
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.12 },
+        );
+        els.forEach((el) => io.observe(el));
+      } else {
+        els.forEach((el) => el.classList.add('is-in'));
+      }
+    </script>
+  </body>
+</html>

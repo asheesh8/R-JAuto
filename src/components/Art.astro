@@ -1,0 +1,42 @@
+---
+/**
+ * One of the ink drawings in public/art/, used as a CSS mask so it takes the
+ * colour of `currentColor`. Purely decorative: hidden from assistive tech.
+ *
+ *   <Art name="brake" style="--w: 520px; --r: -6deg; --o: 0.16; top: 10%; right: -4%;" />
+ *
+ * --w width, --r rotation, --o opacity. Position it with top/left/right/bottom.
+ */
+import sizes from '@/data/art.json';
+
+export interface Props { name: keyof typeof sizes; class?: string; style?: string; inline?: boolean }
+const { name, class: cls, style = '', inline = false } = Astro.props;
+const [w, h] = sizes[name];
+---
+<span
+  class:list={['art', { 'art--inline': inline }, cls]}
+  aria-hidden="true"
+  style={`--src:url(/art/${name}.webp); aspect-ratio:${w} / ${h}; ${style}`}
+></span>
+
+<style>
+  .art {
+    position: absolute;
+    z-index: 0;
+    display: block;
+    width: var(--w, 320px);
+    max-width: none;
+    opacity: var(--o, 0.14);
+    color: var(--art, var(--green));
+    background: currentColor;
+    -webkit-mask: var(--src) center / contain no-repeat;
+    mask: var(--src) center / contain no-repeat;
+    transform: rotate(var(--r, 0deg));
+    pointer-events: none;
+  }
+  .art--inline { position: relative; }
+  @media (max-width: 760px) {
+    .art { width: calc(var(--w, 320px) * 0.6); }
+    .art.hide-sm { display: none; }
+  }
+</style>

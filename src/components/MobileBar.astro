@@ -1,0 +1,29 @@
+---
+import Icon from './Icon.astro';
+import { company } from '@/data/business';
+---
+<div class="mbar" aria-label="Contact the shop">
+  <a class="btn" href={`tel:${company.phoneRaw}`}><Icon name="phone" weight="fill" /> Call</a>
+  <a class="btn btn--line" href={company.directionsUrl} target="_blank" rel="noopener"><Icon name="navigation-arrow" /> Directions</a>
+</div>
+
+<style>
+  .mbar {
+    display: none;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 40;
+    gap: 10px;
+    padding: 10px var(--gutter) calc(10px + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--line);
+  }
+  .mbar .btn { flex: 1; min-height: 48px; }
+  .mbar .btn--line { background: var(--card); }
+  @media (max-width: 720px) {
+    .mbar { display: flex; }
+    :global(body) { padding-bottom: calc(70px + env(safe-area-inset-bottom)); }
+  }
+</style>

@@ -1,0 +1,39 @@
+---
+import Icon from './Icon.astro';
+import Art from './Art.astro';
+import { company, rating } from '@/data/business';
+import { featured } from '@/data/reviews';
+---
+<section class="rate" aria-label="Reviews at a glance">
+  <Art name="truck" class="hide-sm" style="--w: 420px; --o: 0.1; right: -60px; bottom: -18px;" />
+  <div class="wrap rate__grid">
+    <div class="rate__score" data-reveal>
+      <p class="rate__line">
+        <span class="rate__stars" aria-hidden="true">{Array.from({ length: 5 }).map(() => <Icon name="star" weight="fill" size={18} />)}</span>
+        <span><strong class="num">{rating.value}</strong> on Google from {rating.count} reviews</span>
+      </p>
+      <h2 class="rate__h">Locals and folks passing through, back on the road.</h2>
+    </div>
+    <figure class="rate__quote" data-reveal style="--d:80ms">
+      <blockquote><p>“{featured.quote}”</p></blockquote>
+      <figcaption>{featured.name} <span>Google review</span></figcaption>
+      <a class="link" href={company.mapsUrl} target="_blank" rel="noopener">Read the reviews on Google <Icon name="arrow-up-right" /></a>
+    </figure>
+  </div>
+</section>
+
+<style>
+  .rate { background: var(--card); border-block: 1px solid var(--line); padding-block: clamp(48px, 7vw, 80px); position: relative; z-index: 1; overflow: hidden; }
+  .rate__grid { position: relative; z-index: 1; }
+  .rate__grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 6vw, 88px); align-items: center; }
+  .rate__line { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; color: var(--ink-2); }
+  .rate__line strong { color: var(--ink); font-weight: 800; }
+  .rate__stars { display: inline-flex; gap: 2px; color: #e3a008; }
+  .rate__h { margin-top: 14px; font-size: clamp(1.6rem, 3vw, 2.3rem); line-height: 1.1; letter-spacing: -0.025em; max-width: 16em; }
+  .rate__quote { margin: 0; display: grid; gap: 12px; justify-items: start; }
+  .rate__quote blockquote { margin: 0; }
+  .rate__quote p { font-size: var(--t-lg); line-height: 1.5; }
+  .rate__quote figcaption { font-weight: 750; }
+  .rate__quote figcaption span { font-weight: 500; color: var(--ink-3); margin-left: 6px; }
+  @media (max-width: 820px) { .rate__grid { grid-template-columns: 1fr; } }
+</style>

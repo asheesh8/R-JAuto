@@ -1,0 +1,28 @@
+---
+import Icon from './Icon.astro';
+import type { Announcement, Promotion } from '@/data/business';
+
+export interface Props { announcement: Announcement; promo?: Promotion }
+const { announcement, promo } = Astro.props;
+const show = announcement.active && announcement.text;
+const text = show ? announcement.text : promo ? promo.title : '';
+const tone = show ? announcement.tone : 'promo';
+---
+{text && (
+  <div class:list={['abar', `abar--${tone}`]}>
+    <div class="wrap abar__in">
+      {tone === 'alert' && <Icon name="warning" size={16} />}
+      <p>{text}</p>
+      {tone === 'promo' && <a href="/#deals">See the offer</a>}
+    </div>
+  </div>
+)}
+
+<style>
+  .abar { font-size: var(--t-sm); font-weight: 650; line-height: 1.35; }
+  .abar--info, .abar--promo { background: var(--green); color: var(--on-green); }
+  .abar--alert { background: #f2d25c; color: #1f1a05; }
+  .abar__in { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 40px; padding-block: 9px 7px; text-align: center; }
+  .abar__in :global(svg) { flex: none; }
+  .abar a { font-weight: 800; color: inherit; }
+</style>

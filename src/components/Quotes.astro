@@ -1,0 +1,50 @@
+---
+import Icon from './Icon.astro';
+import { reviews } from '@/data/reviews';
+// The strip shows the short ones; longer stories live in the rescue log.
+const short = reviews.filter((r) => r.source === 'Google' && r.quote.length <= 48);
+---
+<section class="qs" id="reviews" aria-labelledby="qs-h">
+  <h2 class="sr-only" id="qs-h">What reviewers say</h2>
+  <div class="qs__track" data-marquee>
+    {[0, 1].map((copy) => (
+      <ul class="qs__row" aria-hidden={copy === 1 ? 'true' : undefined}>
+        {short.map((r) => (
+          <li>
+            <span class="qs__stars" aria-label={`${r.stars} stars`}>{Array.from({ length: r.stars ?? 5 }).map(() => <Icon name="star" weight="fill" size={14} />)}</span>
+            <p>“{r.quote}”</p>
+            <span class="qs__by">{r.name}</span>
+          </li>
+        ))}
+      </ul>
+    ))}
+  </div>
+</section>
+
+<style>
+  .qs { padding-block: 56px; overflow: hidden; border-bottom: 1px solid var(--line); }
+  .qs__track { display: flex; width: max-content; }
+  .qs__row { list-style: none; display: flex; gap: 20px; padding-right: 20px; }
+  .qs__row li {
+    display: grid;
+    gap: 8px;
+    align-content: start;
+    width: 300px;
+    padding: 20px 22px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  .qs__row p { font-size: var(--t-lg); font-weight: 700; line-height: 1.3; letter-spacing: -0.01em; }
+  .qs__stars { display: inline-flex; gap: 2px; color: #e3a008; }
+  .qs__by { font-size: var(--t-sm); color: var(--ink-3); }
+  @media (prefers-reduced-motion: no-preference) {
+    .qs__track { animation: drift 60s linear infinite; }
+    .qs:hover .qs__track { animation-play-state: paused; }
+  }
+  @keyframes drift { to { transform: translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) {
+    .qs { overflow-x: auto; }
+    .qs__row[aria-hidden] { display: none; }
+  }
+</style>

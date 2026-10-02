@@ -1,0 +1,6 @@
+{
+  "tensioner": true,
+  "radiator": true,
+  "sparkplug": true,
+  "brake": true
+}

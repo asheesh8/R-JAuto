@@ -1,0 +1,103 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Icon from './Icon.astro';
+import Art from './Art.astro';
+import { company } from '@/data/business';
+import { MONTHS, type ServiceView } from '@/lib/content';
+import fallback from '@/assets/photos/garage-bay-dusk.jpg';
+
+export interface Props { services: ServiceView[] }
+const { services } = Astro.props;
+
+// One photo per built-in service; anything John adds in the admin gets the
+// shop-at-dusk photo until it has its own.
+const photos = import.meta.glob<{ default: ImageMetadata }>('/src/assets/photos/services/*.jpg', { eager: true });
+const photoFor = (id: string) => photos[`/src/assets/photos/services/${id}.jpg`]?.default ?? fallback;
+
+const tag = (s: ServiceView) => {
+  if (s.status === 'seasonal') return s.bookable ? `Seasonal, ${MONTHS[s.seasonStart - 1]} to ${MONTHS[s.seasonEnd - 1]}` : `Closed for the season. Back in ${MONTHS[s.seasonStart - 1]}`;
+  if (s.status === 'paused') return 'Not booking right now';
+  return '';
+};
+---
+
+<section class="section svc" id="services" aria-labelledby="svc-h">
+  <Art name="piston" class="hide-sm" style="--w: 150px; --r: 14deg; --o: 0.1; right: -40px; top: 34%;" />
+  <Art name="coilover" class="hide-sm" style="--w: 84px; --r: -10deg; --o: 0.12; left: 3%; bottom: 6%;" />
+  <div class="wrap svc__grid">
+    <div class="svc__intro">
+      <h2 class="h-section" id="svc-h" data-reveal>What we fix</h2>
+      <p class="lede" data-reveal style="--d:60ms">
+        The work that comes through the bay most. Not on the list? Call and ask.
+      </p>
+      <a class="link" href={`tel:${company.phoneRaw}`} data-reveal style="--d:120ms"><Icon name="phone" /> {company.phone}</a>
+      <Art name="belt" inline class="svc__art hide-sm" style="--w: min(100%, 360px); --o: 0.2; margin-top: 28px;" />
+    </div>
+
+    <ul class="svc__list">
+      {services.map((s) => (
+        <li class:list={['row', { 'row--off': !s.bookable }]} data-reveal>
+          <div class="row__text">
+            {tag(s) && <p class:list={['row__tag', { off: !s.bookable }]}>{tag(s)}</p>}
+            <h3 class="row__name">{s.name}</h3>
+            <p class="row__blurb">{s.blurb}</p>
+            {!s.bookable && s.note && <p class="row__note">{s.note}</p>}
+            {s.items.length > 0 && <p class="row__items">{s.items.join(', ')}</p>}
+          </div>
+          <div class="row__photo photo">
+            <Image src={photoFor(s.id)} alt="" widths={[360, 640]} sizes="(max-width: 760px) 92vw, 300px" loading="lazy" />
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .svc { overflow: hidden; }
+  .svc__grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.4fr);
+    gap: clamp(32px, 6vw, 96px);
+    align-items: start;
+  }
+  .svc__intro {
+    position: sticky;
+    top: calc(var(--header-h) + 40px);
+    display: grid;
+    gap: 20px;
+    justify-items: start;
+  }
+  .svc__list { list-style: none; }
+  .row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 28px;
+    align-items: center;
+    padding: 28px 0;
+    border-top: 1px solid var(--line);
+  }
+  .row:first-child { border-top: 0; padding-top: 0; }
+  .row__text { display: grid; gap: 8px; }
+  .row__tag { font-size: var(--t-sm); font-weight: 750; color: var(--green); }
+  .row__tag.off { color: var(--ink-3); }
+  .row__name { font-size: var(--t-xl); line-height: 1.15; letter-spacing: -0.015em; }
+  .row__blurb { color: var(--ink-2); }
+  .row__note { color: var(--ink-2); font-style: italic; }
+  .row__items { font-size: var(--t-sm); color: var(--ink-3); }
+  .row__photo { aspect-ratio: 4 / 3; }
+  .row--off .row__photo img { filter: grayscale(1) contrast(0.9); opacity: 0.75; }
+
+  @media (max-width: 960px) {
+    .svc__grid { grid-template-columns: 1fr; }
+    .svc__intro { position: static; }
+    .row { grid-template-columns: minmax(0, 1fr) 200px; }
+  }
+  @media (max-width: 620px) {
+    .row { grid-template-columns: 1fr; gap: 16px; }
+    .row__photo { order: -1; }
+  }
+</style>
