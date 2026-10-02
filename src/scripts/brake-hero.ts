@@ -119,11 +119,17 @@ export async function mountBrake(canvas: HTMLCanvasElement, track: HTMLElement) 
     if (!visible || document.hidden) return;
     resize();
 
-    // Progress through the hero and the brakes copy beside it.
-    const rect = track.getBoundingClientRect();
-    const sticky = getComputedStyle(canvas).position === 'sticky';
-    const span = sticky ? rect.height - innerHeight : innerHeight * 0.8;
-    const p = clamp(-rect.top / Math.max(1, span));
+    // Desktop: progress through the hero and the brakes copy beside it.
+    // Phones: the brake sits in the flow above the brakes copy, so it comes
+    // apart as it travels from mid-screen to the top.
+    let p: number;
+    if (getComputedStyle(canvas).position === 'sticky') {
+      const rect = track.getBoundingClientRect();
+      p = clamp(-rect.top / Math.max(1, rect.height - innerHeight));
+    } else {
+      const c = canvas.getBoundingClientRect();
+      p = clamp((innerHeight * 0.55 - c.top) / (innerHeight * 0.5));
+    }
     explode = reduce ? ease(p) : lerp(explode, ease(p), 0.08);
 
     px = lerp(px, tx, 0.06);

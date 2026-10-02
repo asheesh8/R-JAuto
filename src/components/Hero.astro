@@ -7,6 +7,7 @@ import { company, rating } from '@/data/business';
 import { reviews } from '@/data/reviews';
 import { openState, viewServices, type SiteContent } from '@/lib/content';
 import fallback from '@/assets/photos/garage-bay-dusk.jpg';
+import brakeJob from '@/assets/photos/services/brakes.jpg';
 
 export interface Props { content: SiteContent }
 const { content } = Astro.props;
@@ -30,9 +31,14 @@ const pull = reviews.find((r) => r.name === 'Marcus N')!;
 <div class="brk" data-brake-track>
   <canvas class="brk__canvas" data-brake aria-hidden="true"></canvas>
   <Art name="brake" class="hide-sm" style="--w: min(50vw, 720px); --o: 0.12; --top: calc(48svh - min(14vw, 200px)); --right: 2%;" />
-  <Art name="sparkplug" style="--w: 64px; --r: 16deg; --o: 0.22; --top: 9%; --left: 44%; --w-sm: 46px; --top-sm: 22px; --left-sm: 18px; --r-sm: -18deg; --o-sm: 0.3;" />
-  <Art name="wrench" style="--w: 300px; --r: -16deg; --o: 0.09; --top: 70svh; --left: -90px; --w-sm: 180px; --top-sm: calc(40svh - 60px); --left-sm: auto; --right-sm: -40px; --r-sm: -24deg; --o-sm: 0.13;" />
+  <Art name="sparkplug" class="hide-sm" style="--w: 64px; --r: 16deg; --o: 0.22; --top: 9%; --left: 44%;" />
+  <Art name="wrench" class="hide-sm" style="--w: 300px; --r: -16deg; --o: 0.09; --top: 70svh; --left: -90px;" />
   <Art name="tire" style="--w: 360px; --r: 8deg; --o: 0.07; --bottom: 4%; --left: 30%; --w-sm: 220px; --bottom-sm: 1%; --left-sm: auto; --right-sm: -80px; --o-sm: 0.08;" />
+
+  <!-- Phones open on a real-looking brake job; the 3D brake moves down to the brakes copy. -->
+  <div class="hero__photo">
+    <Image src={brakeJob} alt="Front brake job on a car up on a lift: old rotor on the hub, new rotor beside it" widths={[480, 820]} sizes="(max-width: 900px) 100vw, 480px" loading="eager" fetchpriority="high" />
+  </div>
 
   <div class="hero__aside" aria-label="From the shop">
     <figure class="float float--review" data-reveal style="--d:300ms">
@@ -96,9 +102,6 @@ const pull = reviews.find((r) => r.name === 'Marcus N')!;
           <p>“Reasonably priced, competent, and ethical.”</p>
           <footer>Martin Beaudin, Google review</footer>
         </blockquote>
-        <div class="brakes__plate" aria-hidden="true">
-          <Art name="brake" inline style="--w: 100%; --o: 0.5; --w-sm: 100%; --o-sm: 0.45;" />
-        </div>
       </div>
     </div>
   </section>
@@ -223,7 +226,7 @@ const pull = reviews.find((r) => r.name === 'Marcus N')!;
   .float--tow { bottom: 9%; right: 4%; width: 270px; display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: start; padding: 14px 16px 12px; font-size: var(--t-sm); line-height: 1.45; color: var(--ink-2); }
   .float--tow strong { display: block; color: var(--ink); font-weight: 800; }
   .float__icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--green-tint); color: var(--green); }
-  .brakes__plate { display: none; }
+  .hero__photo { display: none; }
 
   .brakes {
     position: relative;
@@ -248,18 +251,30 @@ const pull = reviews.find((r) => r.name === 'Marcus N')!;
       height: 42svh;
       min-height: 270px;
     }
+    /* Rows on phones: photo, pitch, 3D brake, brakes copy. */
+    .hero__photo {
+      display: block;
+      grid-column: 1;
+      grid-row: 1;
+      margin: 14px var(--gutter) 0;
+      aspect-ratio: 4 / 3;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 18px 36px -24px rgb(18 22 20 / 0.55);
+    }
+    .hero__photo :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: 40% 50%; }
     .hero { grid-row: 2; }
-    .brakes { grid-row: 3; }
-    .hero { min-height: 0; padding-block: 30px 44px; }
+    .brk__canvas { grid-row: 3; }
+    .brakes { grid-row: 4; }
+    .hero { min-height: 0; padding-block: 34px 36px; }
     .hero__aside { grid-column: 1; grid-row: 1; }
-    .float--review { top: auto; left: auto; bottom: -14px; right: var(--gutter); width: 196px; padding: 9px 11px 8px; }
+    .float--review { top: auto; left: auto; bottom: -20px; right: calc(var(--gutter) + 10px); width: 200px; padding: 9px 11px 8px; }
     .float__rate { font-size: 12px; gap: 2px 6px; }
     .float--review blockquote { font-size: var(--t-sm); line-height: 1.25; margin-top: 4px; }
     .float--review figcaption { font-size: 11.5px; margin-top: 3px; }
     .float--tow { display: none; }
-    .brakes { min-height: 0; padding-block: 16px 72px; }
+    .brakes { min-height: 0; padding-block: 8px 64px; }
     .hero__meta { margin-bottom: 16px; }
-    .brakes__plate { display: block; margin-top: 36px; }
   }
   /* The sticky call bar takes over on phones, so the hero keeps one button. */
   /* Phones: the sticky bar has Call, and the service tiles below replace
@@ -268,7 +283,7 @@ const pull = reviews.find((r) => r.name === 'Marcus N')!;
     .hero__cta { display: none; }
     .quick { margin-top: 24px; }
   }
-  @media (max-width: 380px) {
+  @media (max-width: 440px) {
     .quick a { grid-template-columns: 40px 1fr; gap: 9px; }
     .quick :global(.quick__img) { width: 40px; height: 40px; }
     .quick :global(.quick__go) { display: none; }
