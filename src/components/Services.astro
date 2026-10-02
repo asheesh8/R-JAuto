@@ -23,8 +23,8 @@ const tag = (s: ServiceView) => {
 ---
 
 <section class="section svc" id="services" aria-labelledby="svc-h">
-  <Art name="piston" class="hide-sm" style="--w: 150px; --r: 14deg; --o: 0.1; right: -40px; top: 34%;" />
-  <Art name="coilover" class="hide-sm" style="--w: 84px; --r: -10deg; --o: 0.12; left: 3%; bottom: 6%;" />
+  <Art name="piston" style="--w: 150px; --r: 14deg; --o: 0.1; --right: -40px; --top: 34%; --w-sm: 70px; --top-sm: 56px; --right-sm: 14px; --o-sm: 0.16;" />
+  <Art name="coilover" class="hide-sm" style="--w: 84px; --r: -10deg; --o: 0.12; --left: 3%; --bottom: 6%;" />
   <div class="wrap svc__grid">
     <div class="svc__intro">
       <h2 class="h-section" id="svc-h" data-reveal>What we fix</h2>
@@ -92,12 +92,42 @@ const tag = (s: ServiceView) => {
   .row--off .row__photo img { filter: grayscale(1) contrast(0.9); opacity: 0.75; }
 
   @media (max-width: 960px) {
-    .svc__grid { grid-template-columns: 1fr; }
+    .svc__grid { grid-template-columns: minmax(0, 1fr); }
     .svc__intro { position: static; }
     .row { grid-template-columns: minmax(0, 1fr) 200px; }
   }
+  /* Phones: a swipeable row of cards instead of nine stacked rows. */
   @media (max-width: 620px) {
-    .row { grid-template-columns: 1fr; gap: 16px; }
-    .row__photo { order: -1; }
+    .svc__grid { gap: 28px; }
+    .svc__list {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 82%;
+      gap: 12px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: var(--gutter);
+      margin-inline: calc(var(--gutter) * -1);
+      padding: 4px var(--gutter) 12px;
+      scrollbar-width: none;
+    }
+    .svc__list::-webkit-scrollbar { display: none; }
+    .row,
+    .row:first-child {
+      grid-template-columns: 1fr;
+      align-items: start;
+      align-content: start;
+      gap: 0;
+      padding: 0 0 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--card);
+      scroll-snap-align: start;
+      overflow: hidden;
+    }
+    .row__photo { order: -1; border-radius: 0; }
+    .row__text { padding: 16px 16px 0; }
+    .row__items { display: none; }
   }
 </style>

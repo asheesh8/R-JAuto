@@ -67,11 +67,20 @@ const links = [
     position: sticky;
     top: 0;
     z-index: 50;
+    border-bottom: 1px solid var(--line);
+  }
+  /* The frosted bar lives on a pseudo-element: backdrop-filter on .hdr itself
+     would make it the containing block for the fixed mobile menu and squash it. */
+  .hdr::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
     background: color-mix(in srgb, var(--paper) 88%, transparent);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--line);
   }
+  .is-open.hdr::before { background: var(--paper); }
   .hdr__bar { height: var(--header-h); display: flex; align-items: center; gap: 28px; }
   .hdr__brand { text-decoration: none; flex: none; }
   .hdr__nav { margin-left: 12px; }

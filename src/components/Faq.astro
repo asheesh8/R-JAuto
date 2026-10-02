@@ -5,9 +5,9 @@ import { faqs } from '@/data/business';
 ---
 <section class="section faq" aria-labelledby="faq-h">
   <div class="wrap faq__grid">
-    <div>
+    <div class="faq__head">
       <h2 class="h-section" id="faq-h" data-reveal>Good to know</h2>
-      <Art name="oilcan" inline class="hide-sm" style="--w: 220px; --o: 0.18; margin-top: 36px;" />
+      <Art name="oilcan" inline style="--w: 220px; --o: 0.18; margin-top: 36px; --w-sm: 110px; --o-sm: 0.2;" />
     </div>
     <div class="faq__list">
       {faqs.map((f) => (
@@ -30,5 +30,9 @@ import { faqs } from '@/data/business';
   summary :global(svg) { flex: none; transition: transform 220ms var(--ease-out); color: var(--green); }
   details[open] summary :global(svg) { transform: rotate(45deg); }
   details p { padding-bottom: 20px; color: var(--ink-2); max-width: 40em; }
-  @media (max-width: 820px) { .faq__grid { grid-template-columns: 1fr; } }
+  @media (max-width: 820px) {
+    .faq__grid { grid-template-columns: 1fr; gap: 24px; }
+    .faq__head { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .faq__head :global(.art) { margin-top: 0 !important; flex: none; }
+  }
 </style>

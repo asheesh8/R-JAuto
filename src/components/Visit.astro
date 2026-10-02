@@ -11,7 +11,7 @@ const state = openState(content.hours);
 ---
 
 <section class="section visit" id="visit" aria-labelledby="visit-h">
-  <Art name="jack" class="hide-sm" style="--w: 240px; --o: 0.09; left: -50px; bottom: 24px; --r: -6deg;" />
+  <Art name="jack" style="--w: 240px; --o: 0.09; --left: -50px; --bottom: 24px; --r: -6deg; --w-sm: 150px; --left-sm: auto; --right-sm: -40px; --bottom-sm: auto; --top-sm: 40px; --o-sm: 0.1;" />
   <div class="wrap visit__grid">
     <div class="visit__where">
       <div class="sign" aria-hidden="true" data-reveal>
@@ -100,6 +100,10 @@ const state = openState(content.hours);
   @media (max-width: 1000px) {
     .visit__grid { grid-template-columns: 1fr 1fr; }
     .visit__map { grid-column: 1 / -1; aspect-ratio: 16 / 9; }
+  }
+  /* The sticky bar already carries Call and Directions on phones. */
+  @media (max-width: 720px) {
+    .visit__cta { display: none; }
   }
   @media (max-width: 640px) {
     .visit__grid { grid-template-columns: 1fr; }

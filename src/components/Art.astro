@@ -3,9 +3,14 @@
  * One of the ink drawings in public/art/, used as a CSS mask so it takes the
  * colour of `currentColor`. Purely decorative: hidden from assistive tech.
  *
- *   <Art name="brake" style="--w: 520px; --r: -6deg; --o: 0.16; top: 10%; right: -4%;" />
+ * Placement is all custom properties so phones can get their own spot:
  *
- * --w width, --r rotation, --o opacity. Position it with top/left/right/bottom.
+ *   <Art name="brake" style="--w: 520px; --r: -6deg; --o: .16; --top: 10%; --right: -4%;
+ *                            --w-sm: 300px; --top-sm: 20px; --right-sm: -40px;" />
+ *
+ * --w width, --r rotation, --o opacity, --top/--right/--bottom/--left position.
+ * Any of them with an -sm suffix overrides it under 760px. class="hide-sm"
+ * drops it on phones.
  */
 import sizes from '@/data/art.json';
 
@@ -24,6 +29,10 @@ const [w, h] = sizes[name];
     position: absolute;
     z-index: 0;
     display: block;
+    top: var(--top, auto);
+    right: var(--right, auto);
+    bottom: var(--bottom, auto);
+    left: var(--left, auto);
     width: var(--w, 320px);
     max-width: none;
     opacity: var(--o, 0.14);
@@ -34,9 +43,18 @@ const [w, h] = sizes[name];
     transform: rotate(var(--r, 0deg));
     pointer-events: none;
   }
-  .art--inline { position: relative; }
+  .art--inline { position: relative; top: auto; right: auto; bottom: auto; left: auto; }
   @media (max-width: 760px) {
-    .art { width: calc(var(--w, 320px) * 0.6); }
+    .art {
+      top: var(--top-sm, var(--top, auto));
+      right: var(--right-sm, var(--right, auto));
+      bottom: var(--bottom-sm, var(--bottom, auto));
+      left: var(--left-sm, var(--left, auto));
+      width: var(--w-sm, calc(var(--w, 320px) * 0.6));
+      opacity: var(--o-sm, var(--o, 0.14));
+      transform: rotate(var(--r-sm, var(--r, 0deg)));
+    }
+    .art--inline { top: auto; right: auto; bottom: auto; left: auto; }
     .art.hide-sm { display: none; }
   }
 </style>

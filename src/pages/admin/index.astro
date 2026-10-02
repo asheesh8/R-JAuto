@@ -62,11 +62,11 @@ const updated = content?.updatedAt
             <a class="bar__brand" href="/" target="_blank" rel="noopener">{company.name} <Icon name="arrow-up-right" size={14} /></a>
             <nav class="tabs" aria-label="Sections">
               <a href="#services" class="is-on">Services</a>
-              <a href="#promos">Promotions</a>
-              <a href="#notice">Announcement</a>
+              <a href="#promos">Promos</a>
+              <a href="#notice">Notice bar</a>
               <a href="#hours">Hours</a>
             </nav>
-            <form method="post" action="/api/admin/logout"><button class="bar__out" type="submit"><Icon name="sign-out" size={16} /> Sign out</button></form>
+            <form method="post" action="/api/admin/logout"><button class="bar__out" type="submit" aria-label="Sign out"><Icon name="sign-out" size={16} /> <span>Sign out</span></button></form>
           </div>
         </header>
 
@@ -182,7 +182,7 @@ const updated = content?.updatedAt
           <!-- Announcement -->
           <section class="card" id="notice" aria-labelledby="h-notice" data-notice>
             <div class="card__head">
-              <h2 id="h-notice">Announcement bar</h2>
+              <h2 id="h-notice">Notice bar</h2>
               <p>A one-line message across the top of every page, like "Closed Friday for the holiday". It replaces the promotion bar while it is on.</p>
             </div>
             <div class="fields fields--flat">
@@ -551,6 +551,13 @@ const updated = content?.updatedAt
         .hours__row input[type='time'] { grid-column: span 1; }
         .hours__to { display: none; }
         .bar__brand { display: none; }
+        .bar__in { gap: 8px; padding: 0 12px; }
+        .tabs { margin-inline: 0; flex: 1; }
+        .tabs a { padding-inline: 9px; }
+        .bar__out span { display: none; }
+        .bar__out { padding: 8px; }
+        .card { padding: 18px 16px; }
+        .savebar__in { padding: 10px 12px; }
       }
     </style>
   </body>

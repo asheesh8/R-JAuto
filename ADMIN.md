@@ -11,7 +11,7 @@ live site within about 15 seconds (the page is CDN-cached for 15s). No deploy.
 | --- | --- |
 | Services | Rename, reorder, add, remove. Each one is **Offered**, **Seasonal** (only bookable between two months, e.g. undercoating April to November), **Paused** (greyed out with a note), or **Hidden**. Seasonal services flip on and off by themselves on the first of the month, in Vermont time. |
 | Promotions | Headline, details, small label, fine print, optional start and end dates, on/off switch. The first live one shows in the green bar at the top; all live ones show under the reviews. |
-| Announcement bar | One line across the top of every page ("Closed Friday for the holiday"). Replaces the promo bar while it is on. Green or yellow. |
+| Notice bar | One line across the top of every page ("Closed Friday for the holiday"). Replaces the promo bar while it is on. Green or yellow. |
 | Hours | Per-day open/close or closed, plus an optional note. Drives the "Open now" label, the hours table and the Google structured data. |
 
 Everything else (copy, photos, reviews, 3D) is in code. `src/data/business.ts`

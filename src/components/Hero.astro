@@ -1,32 +1,41 @@
 ---
 import Icon from './Icon.astro';
 import Art from './Art.astro';
-import { company } from '@/data/business';
-import type { SiteContent } from '@/lib/content';
+import { company, rating } from '@/data/business';
+import { openState, type SiteContent } from '@/lib/content';
 
 export interface Props { content: SiteContent }
 const { content } = Astro.props;
 const saturday = !content.hours.sat.closed;
+const state = openState(content.hours);
 ---
 
 <div class="brk" data-brake-track>
   <canvas class="brk__canvas" data-brake aria-hidden="true"></canvas>
-  <Art name="brake" class="hide-sm" style="--w: min(50vw, 720px); --o: 0.14; top: calc(48svh - min(14vw, 200px)); right: 2%;" />
-  <Art name="sparkplug" class="hide-sm" style="--w: 64px; --r: 16deg; --o: 0.22; top: 9%; left: 44%;" />
-  <Art name="wrench" class="hide-sm" style="--w: 300px; --r: -16deg; --o: 0.09; top: 70svh; left: -90px;" />
-  <Art name="tire" class="hide-sm" style="--w: 360px; --r: 8deg; --o: 0.07; bottom: 4%; left: 30%;" />
+  <Art name="brake" class="hide-sm" style="--w: min(50vw, 720px); --o: 0.12; --top: calc(48svh - min(14vw, 200px)); --right: 2%;" />
+  <Art name="sparkplug" style="--w: 64px; --r: 16deg; --o: 0.22; --top: 9%; --left: 44%; --w-sm: 46px; --top-sm: 22px; --left-sm: 18px; --r-sm: -18deg; --o-sm: 0.3;" />
+  <Art name="wrench" style="--w: 300px; --r: -16deg; --o: 0.09; --top: 70svh; --left: -90px; --w-sm: 180px; --top-sm: calc(40svh - 60px); --left-sm: auto; --right-sm: -40px; --r-sm: -24deg; --o-sm: 0.13;" />
+  <Art name="tire" style="--w: 360px; --r: 8deg; --o: 0.07; --bottom: 4%; --left: 30%; --w-sm: 220px; --bottom-sm: 1%; --left-sm: auto; --right-sm: -80px; --o-sm: 0.08;" />
 
   <section class="hero" aria-labelledby="hero-h">
     <div class="wrap">
       <div class="hero__copy">
-        <h1 class="h-display" id="hero-h" data-reveal>The good guys on North&nbsp;Main.</h1>
+        <p class="hero__meta" data-reveal>
+          <span class="status" data-open={String(state.open)}>{state.label}</span>
+          <span class="hero__addr">{company.street}, {company.city}</span>
+        </p>
+        <h1 class="h-display" id="hero-h" data-reveal style="--d:40ms">The good guys on North&nbsp;Main.</h1>
         <p class="lede hero__lede" data-reveal style="--d:80ms">
           Same-day when there's room in the bay, fair quotes{saturday ? ', and Saturday hours' : ''}. Ask for {company.contact}.
         </p>
         <div class="hero__cta" data-reveal style="--d:160ms">
-          <a class="btn" href={`tel:${company.phoneRaw}`}><Icon name="phone" weight="fill" /> Call <span class="num">{company.phone}</span></a>
+          <a class="btn hero__call" href={`tel:${company.phoneRaw}`}><Icon name="phone" weight="fill" /> Call<span class="num hero__num">&nbsp;{company.phone}</span></a>
           <a class="btn btn--line" href="#services">See services <Icon name="arrow-right" /></a>
         </div>
+        <a class="hero__rate" href={company.mapsUrl} target="_blank" rel="noopener" data-reveal style="--d:220ms">
+          <span class="hero__stars" aria-hidden="true">{Array.from({ length: 5 }).map(() => <Icon name="star" weight="fill" size={16} />)}</span>
+          <span><strong class="num">{rating.value}</strong> on Google from {rating.count} reviews</span>
+        </a>
       </div>
     </div>
   </section>
@@ -43,6 +52,9 @@ const saturday = !content.hours.sat.closed;
           <p>“Reasonably priced, competent, and ethical.”</p>
           <footer>Martin Beaudin, Google review</footer>
         </blockquote>
+        <div class="brakes__plate" aria-hidden="true">
+          <Art name="brake" inline style="--w: 100%; --o: 0.5; --w-sm: 100%; --o-sm: 0.45;" />
+        </div>
       </div>
     </div>
   </section>
@@ -64,6 +76,8 @@ const saturday = !content.hours.sat.closed;
      right column across both rows and stays inside them. */
   .brk {
     position: relative;
+    /* clip, not hidden: hidden would make this a scroll box and break the sticky canvas. */
+    overflow-x: clip;
     display: grid;
     grid-template-columns: 44% 56%;
     background:
@@ -87,6 +101,12 @@ const saturday = !content.hours.sat.closed;
     transition: opacity 1.2s var(--ease-out);
   }
   .brk__canvas[data-ready] { opacity: 1; }
+  /* A lift pad for the brake to sit on: a soft plate-green disc with one ring. */
+  .brk__canvas {
+    background:
+      radial-gradient(circle closest-side at 50% 50%, transparent 0 86%, rgb(29 82 54 / 0.18) 86.2% 86.8%, transparent 87%),
+      radial-gradient(circle closest-side at 50% 50%, #e1ebe4 0 74%, rgb(225 235 228 / 0) 74.5%);
+  }
 
   .hero {
     position: relative;
@@ -96,8 +116,27 @@ const saturday = !content.hours.sat.closed;
     padding-block: 40px 88px;
   }
   .hero__copy { position: relative; z-index: 2; max-width: 560px; }
+  .hero__meta {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+    margin-bottom: 22px;
+    padding: 8px 14px 6px;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--line), 0 6px 16px -10px rgb(18 22 20 / 0.25);
+    font-size: var(--t-sm);
+  }
+  .hero__meta .status { font-weight: 700; }
+  .hero__addr { color: var(--ink-3); padding-left: 14px; border-left: 1px solid var(--line-2); }
   .hero__lede { margin-top: 22px; max-width: 30em; }
   .hero__cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+  .hero__rate { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 24px; color: var(--ink-2); text-decoration: none; font-size: var(--t-sm); }
+  .hero__rate strong { color: var(--ink); font-weight: 800; }
+  .hero__rate:hover span:last-child { text-decoration: underline; text-underline-offset: 3px; }
+  .hero__stars { display: inline-flex; gap: 2px; color: #e3a008; }
+  .brakes__plate { display: none; }
 
   .brakes {
     position: relative;
@@ -119,12 +158,23 @@ const saturday = !content.hours.sat.closed;
       grid-row: 1;
       position: relative;
       top: 0;
-      height: 44svh;
-      min-height: 260px;
+      height: 40svh;
+      min-height: 250px;
     }
     .hero { grid-row: 2; }
     .brakes { grid-row: 3; }
     .hero { min-height: 0; padding-block: 0 56px; }
     .brakes { min-height: 0; padding-block: 16px 72px; }
+    .hero__meta { margin-bottom: 18px; }
+    .brakes__plate { display: block; margin-top: 36px; }
+  }
+  /* The sticky call bar takes over on phones, so the hero keeps one button. */
+  @media (max-width: 720px) {
+    .hero__call { display: none; }
+    .hero__cta { margin-top: 26px; }
+    .hero__cta .btn { width: 100%; }
+  }
+  @media (max-width: 440px) {
+    .hero__addr { display: none; }
   }
 </style>
