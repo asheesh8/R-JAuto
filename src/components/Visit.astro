@@ -106,7 +106,8 @@ const state = openState(content.hours);
     .visit__cta { display: none; }
   }
   @media (max-width: 640px) {
-    .visit__grid { grid-template-columns: 1fr; }
-    .visit__map { aspect-ratio: 4 / 3; }
+    .visit__grid { grid-template-columns: 1fr; gap: 24px; }
+    /* Phones: the sticky bar's Directions button does the map's job. */
+    .visit__map { display: none; }
   }
 </style>

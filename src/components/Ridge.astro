@@ -19,12 +19,14 @@ export interface Props {
    * stretch: squeezed to fit any band height; reads as low rolling hills.
    */
   fit?: 'natural' | 'stretch';
+  /** Tuck the top of the range into the section above instead of adding height. */
+  lift?: boolean;
   class?: string;
 }
-const { front, back, height, shift = '30%', fit = 'natural', class: cls } = Astro.props;
+const { front, back, height, shift = '30%', fit = 'natural', lift = false, class: cls } = Astro.props;
 const h = height ?? (fit === 'natural' ? 'clamp(56px, 13vw, 200px)' : 'clamp(48px, 8vw, 120px)');
 ---
-<div class:list={['ridge', `ridge--${fit}`, cls]} aria-hidden="true" style={`--front:${front}; --back:${back ?? 'transparent'}; --h:${h}; --shift:${shift};`}>
+<div class:list={['ridge', `ridge--${fit}`, { 'ridge--lift': lift }, cls]} aria-hidden="true" style={`--front:${front}; --back:${back ?? 'transparent'}; --h:${h}; --shift:${shift};`}>
   {back && <span class="ridge__back"></span>}
   <span class="ridge__front"></span>
 </div>
@@ -49,6 +51,7 @@ const h = height ?? (fit === 'natural' ? 'clamp(56px, 13vw, 200px)' : 'clamp(48p
     -webkit-mask-repeat: no-repeat;
     mask-repeat: no-repeat;
   }
+  .ridge--lift { margin-top: calc(var(--h) * -0.55); }
   .ridge__back { top: 0; background: var(--back); }
   .ridge__front { background: var(--front); }
 

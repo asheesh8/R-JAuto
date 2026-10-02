@@ -46,7 +46,7 @@
 
   --gutter: clamp(16px, 4vw, 44px);
   --max: 1200px;
-  --section-y: clamp(64px, 9vw, 120px);
+  --section-y: clamp(44px, 6vw, 84px);
   --radius: 6px;
   --header-h: 68px;
 

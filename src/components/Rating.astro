@@ -23,7 +23,7 @@ import { featured } from '@/data/reviews';
 </section>
 
 <style>
-  .rate { background: var(--card); border-block: 1px solid var(--line); padding-block: clamp(48px, 7vw, 80px); position: relative; z-index: 1; overflow: hidden; }
+  .rate { background: var(--card); border-block: 1px solid var(--line); padding-block: clamp(32px, 4.5vw, 56px); position: relative; z-index: 1; overflow: hidden; }
   .rate__grid { position: relative; z-index: 1; }
   .rate__grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 6vw, 88px); align-items: center; }
   .rate__line { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; color: var(--ink-2); }
@@ -35,5 +35,9 @@ import { featured } from '@/data/reviews';
   .rate__quote p { font-size: var(--t-lg); line-height: 1.5; }
   .rate__quote figcaption { font-weight: 750; }
   .rate__quote figcaption span { font-weight: 500; color: var(--ink-3); margin-left: 6px; }
-  @media (max-width: 820px) { .rate__grid { grid-template-columns: 1fr; } }
+  @media (max-width: 820px) { .rate__grid { grid-template-columns: 1fr; gap: 16px; } }
+  /* Phones: the hero's review card already carries a quote; keep the link. */
+  @media (max-width: 620px) {
+    .rate__quote blockquote, .rate__quote figcaption { display: none; }
+  }
 </style>
