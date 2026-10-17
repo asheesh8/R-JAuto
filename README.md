@@ -10,6 +10,20 @@ npm run dev        # http://localhost:4541
 npm run build
 ```
 
+**Live:** https://r-j-auto.vercel.app (Vercel project for `asheesh8/R-JAuto`; `asheesh8/R-JAutoService` holds the same code — keep the two in step or retire one).
+
+### Environment variables
+
+Names only — set them in the Vercel project. Details in [ADMIN.md](ADMIN.md).
+
+| Variable | Purpose |
+|---|---|
+| `BLOB_READ_WRITE_TOKEN` | Injected by Vercel when a Blob store is attached; stores admin edits |
+| `ADMIN_PASSWORD` | Optional — overrides the built-in password hash |
+| `ADMIN_SESSION_SECRET` | Optional — signs admin sessions (falls back to the password, then the Blob token) |
+
+Requires Node 22.12+ (Astro 7). The site renders on Vercel through `@astrojs/vercel`; pushes to `main` deploy to production.
+
 ## Where things live
 
 - `src/data/business.ts`: every fact on the site, plus the defaults the admin edits. Anything marked `TODO(rj)` needs John's confirmation before launch.
